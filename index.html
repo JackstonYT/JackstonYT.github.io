@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>if (history.scrollRestoration) history.scrollRestoration = "manual"; window.scrollTo(0,0);</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yeeps Color Converter</title>
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
@@ -11,77 +12,76 @@
             background-color: var(--bg); color: var(--text);
             font-family: var(--font, 'Lilita One', cursive);
             letter-spacing: 0.5px;
+            overflow: hidden; /* prevent page scroll on desktop */
+        }
+        /* Outer shell fills full viewport height */
+        #appShell {
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        .header-section {
+            flex-shrink: 0;
+        }
+        .main-layout {
+            flex: 1; min-height: 0;
         }
 
         .header-section {
             text-align: center;
-            padding: 30px 20px 10px 20px;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 14px 20px 10px 20px;
+            flex-shrink: 0;
         }
-        /* Viewer goes from full-width to flex:1.2 of 2.0 = 60%.
-           Header stays centered above viewer the whole time since viewer starts full width.
-           After slide, viewer center = 30% from left, so shift header left by 20vw. */
-        body.image-loaded .header-section {
-            transform: translateX(-20vw);
+        .header-section h1 { margin: 0; font-size: 2rem; color: var(--text); text-shadow: 2px 2px 0px var(--h1-shadow); }
+        .header-section p { margin: 3px 0 0 0; color: var(--text2); font-size: 0.9rem; }
+
+        /* ── 3-column layout: [controls] [frame] [palette] ── */
+        .main-layout {
+            display: flex; width: 100vw;
+            height: 100%; /* appShell flex handles this */
+            overflow: hidden;
+            border-bottom: 2px solid var(--border);
         }
-        .header-section h1 { margin: 0; font-size: 3rem; color: var(--text); text-shadow: 2px 2px 0px var(--h1-shadow); }
-        .header-section p { margin: 5px 0 0 0; color: var(--text2); font-size: 1.1rem; }
 
-        .main-layout { display: flex; width: 100vw; border-bottom: 2px solid var(--border); overflow: visible; align-items: flex-start; min-height: 0; position: relative; }
-
+        /* LEFT: controls panel */
         .viewer-section {
+            width: 280px; flex-shrink: 0;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: flex-start;
-            padding: 20px; box-sizing: border-box; background: var(--bg);
-            flex: 2; border-right: none;
-            transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        border-right 0s 0.6s;
-        }
-        /* Inner column that constrains both controls and frame to same width */
-        .viewer-inner {
-            width: 100%;
-            max-width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-        }
-        body.image-loaded .viewer-section {
-            flex: 1.2;
+            background: var(--bg);
             border-right: 2px solid var(--border);
+            overflow-y: auto; overflow-x: hidden;
+            padding: 14px; box-sizing: border-box;
+            transition: none;
+        }
+        .viewer-inner {
+            width: 100%; display: flex; flex-direction: column; gap: 8px;
         }
 
+        /* CENTER: frame fills all remaining space */
+        #frameSection {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: var(--bg); padding: 16px; box-sizing: border-box;
+            min-width: 0;
+        }
+
+        /* RIGHT: palette panel */
         .palette-section {
-            flex: 0; min-width: 0; width: 0; overflow: hidden;
+            width: 0; flex-shrink: 0; overflow: hidden;
             background: var(--bg2);
             padding: 0; box-sizing: border-box;
-            opacity: 0;
-            pointer-events: none;
-            /* Sticky so it stays in view as the viewer extends down */
-            position: sticky;
-            top: 0;
-            align-self: flex-start;
-            max-height: 100vh;
-            transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        min-width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        padding 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        opacity 0.5s ease 0.4s;
+            opacity: 0; pointer-events: none;
+            border-left: none;
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1),
+                        padding 0.5s cubic-bezier(0.4,0,0.2,1),
+                        opacity 0.4s ease 0.2s;
+            display: flex; flex-direction: column;
+            overflow-y: hidden;
         }
         body.image-loaded .palette-section {
-            flex: 0.8;
-            min-width: 320px;
-            width: auto;
+            width: 300px; padding: 16px;
+            opacity: 1; pointer-events: all;
+            border-left: 2px solid var(--border);
             overflow-y: hidden;
-            padding: 20px;
-            opacity: 1;
-            pointer-events: all;
-            display: flex;
-            flex-direction: column;
         }
-        #paletteStats {
-            overflow-y: auto;
-            flex: 1;
-            min-height: 0;
-        }
+        #paletteStats { overflow-y: auto; flex: 1; min-height: 0; }
 
         /* ═══════════════════════════════════════
            THEME SYSTEM
@@ -182,20 +182,13 @@
         }
 
         .controls { 
-            background: var(--card); padding: 15px; border-radius: 12px; 
-            width: 100%; margin-bottom: 20px; 
+            background: transparent; padding: 0;
+            width: 100%; margin-bottom: 0; 
             display: flex; flex-direction: column; gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         #dynamicControls {
             display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.5s ease 0.3s;
-        }
-        body.image-loaded #dynamicControls {
-            opacity: 1;
-            pointer-events: all;
         }
 
         .control-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
@@ -214,25 +207,21 @@
         }
 
         .viewport-frame {
-            width: 100%;
-            aspect-ratio: 1 / 1;
+            width: 100%; height: 100%;
             border: 4px solid var(--border2); border-radius: 8px;
             overflow: hidden; position: relative; cursor: grab;
             background-color: var(--bg2);
             background-image: repeating-conic-gradient(var(--checker1) 0% 25%, var(--checker2) 0% 50%);
             background-size: 16px 16px;
-            opacity: 0;
-            transition: opacity 0.5s ease 0.35s;
             box-sizing: border-box;
         }
-        body.image-loaded .viewport-frame {
-            opacity: 1;
-        }
 
-        #canvasContainer { display: inline-block; transform-origin: 0 0; line-height: 0; position: relative; }
+        #canvasContainer { display: inline-block; line-height: 0; position: absolute; }
+        /* Frame is the positioning parent; canvasContainer is positioned by JS */
+        #overlayCanvas { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; image-rendering: pixelated; }
         #mainCanvas { position: relative; z-index: 2; cursor: crosshair; }
 
-        .viewport-frame { position: relative; }
+
 
 
         input[type="range"], input[type="text"] { width: 100%; accent-color: var(--accent); font-family: 'Lilita One', cursive; }
@@ -256,6 +245,7 @@
         
         .master-section { padding: 40px; max-width: 1200px; margin: 0 auto; }
         .master-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+        #masterGrid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important; gap: 5px !important; }
         .master-item { 
             display: flex; align-items: center; background: var(--card); 
             padding: 12px; border-radius: 8px; font-size: 0.95rem;
@@ -382,65 +372,47 @@
             .header-section h1 { font-size: 1.8rem; }
             .header-section p  { font-size: 0.9rem; }
 
-            /* Stack layout vertically */
+            /* Stack layout vertically on mobile */
+            html, body { overflow: auto !important; }
+            #appShell { height: auto !important; overflow: visible !important; }
             .main-layout {
-                flex-direction: column;
-                height: auto;
+                flex-direction: column !important;
+                height: auto !important;
+                overflow: visible !important;
                 border-bottom: none;
-                overflow: visible;
             }
-
-            /* Viewer takes full width */
+            #frameSection {
+                order: 1; width: 100%; height: 80vw; max-height: 70vh;
+                padding: 10px; box-sizing: border-box;
+            }
+            /* Viewer takes full width, comes after frame on mobile */
             .viewer-section {
-                flex: none !important;
-                width: 100%;
+                order: 2;
+                width: 100% !important; flex-shrink: 0;
                 border-right: none !important;
-                padding: 12px;
-                justify-content: flex-start;
+                border-top: 2px solid var(--border);
+                padding: 12px; overflow-y: visible;
                 transition: none;
             }
-            body.image-loaded .viewer-section {
-                flex: none !important;
-                border-right: none !important;
-            }
-            .viewer-inner {
-                max-width: 100% !important;
-            }
-
-            /* Controls fill width */
-            .controls {
-                margin-bottom: 12px;
-            }
-
-            /* Frame fills width, square */
+            .viewer-inner { max-width: 100% !important; }
+            .controls { margin-bottom: 12px; }
             .viewport-frame {
-                width: 100% !important;
-                aspect-ratio: 1 / 1 !important;
-                height: auto !important;
-                opacity: 1 !important;
+                width: 100% !important; height: 100% !important;
+                aspect-ratio: unset !important; opacity: 1 !important;
             }
-
-            /* Palette — full width below viewer on mobile, not sticky */
+            /* Palette — full width below on mobile */
             .palette-section {
-                position: static !important;
-                flex: none !important;
-                width: 100% !important;
-                min-width: 0 !important;
-                max-width: none !important;
-                max-height: 0 !important;
-                height: auto !important;
-                overflow: hidden !important;
-                padding: 0 !important;
-                opacity: 0;
+                order: 3;
+                width: 100% !important; flex-shrink: 0;
+                border-left: none !important;
                 border-top: 2px solid var(--border);
-                transition: max-height 0.6s ease, opacity 0.4s ease 0.1s, padding 0.4s ease;
+                max-height: 0 !important; overflow: hidden !important;
+                padding: 0 !important; opacity: 0;
+                transition: max-height 0.5s ease, opacity 0.4s ease 0.1s, padding 0.4s ease;
             }
             body.image-loaded .palette-section {
-                position: static !important;
-                max-height: none !important;
-                height: auto !important;
-                padding: 16px !important;
-                opacity: 1 !important;
+                max-height: none !important; height: auto !important;
+                padding: 16px !important; opacity: 1 !important;
                 overflow: visible !important;
             }
 
@@ -829,6 +801,253 @@
         #gsBlockOptSub.hiding  { animation: subSlideOut 0.18s ease forwards; }
         html[data-animations="off"] #gsBlockOptSub.visible,
         html[data-animations="off"] #gsBlockOptSub.hiding { animation: none !important; }
+
+        /* controls are now in the left panel */
+
+        /* Hover tooltip in inspect mode */
+        #hoverTooltip {
+            position: fixed; z-index: 5000; pointer-events: none;
+            background: rgba(15,15,20,0.92); border: 1.5px solid var(--border2);
+            border-radius: 10px; padding: 10px 14px; min-width: 160px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; gap: 3px;
+            backdrop-filter: blur(6px);
+        }
+        #hoverTooltip.visible { display: flex; }
+        #hoverTipColor { font-size: 1rem; font-weight: bold; color: var(--accent); }
+        #hoverTipCount { font-size: 0.8rem; color: var(--text2); }
+        #hoverTipBlock { font-size: 0.85rem; color: #5ec9a0; font-weight: bold; }
+
+        .sidebar-tab {
+            flex: 1; padding: 7px 6px; border-radius: 8px; cursor: pointer;
+            background: var(--card); border: 1.5px solid var(--border2);
+            color: var(--text2); font-family: inherit; font-size: 0.82rem;
+            transition: 0.15s;
+        }
+        .sidebar-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .sidebar-tab:hover:not(.active) { background: var(--btn-sec); }
+        #sidePaintsPanel { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+        /* Upload area shrinks and slides when image loaded */
+        #uploadArea {
+            transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+            overflow: hidden;
+        }
+        body.image-loaded #uploadArea {
+            max-height: 36px;
+            opacity: 0.45;
+        }
+        body.image-loaded #dropZone {
+            padding: 5px 10px;
+            flex-direction: row;
+            gap: 8px;
+            border-radius: 6px;
+        }
+        body.image-loaded #dropZoneSub { display: none; }
+        body.image-loaded #dropZoneText { font-size: 0.75rem; }
+        body.image-loaded #removeBgLabel { display: none; }
+
+        #dropZone {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 7px; padding: 22px 14px;
+            border: 2px dashed color-mix(in srgb, var(--accent) 50%, var(--border2));
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--accent) 6%, var(--bg2));
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: border-color 0.25s, transform 0.15s;
+            width: 100%; box-sizing: border-box;
+            /* Animate dashes */
+            animation: dashedPulse 4s ease-in-out infinite;
+        }
+        @keyframes dashedPulse {
+            0%, 100% { border-color: color-mix(in srgb, var(--accent) 45%, var(--border2)); }
+            50%       { border-color: color-mix(in srgb, var(--accent) 75%, var(--border2)); }
+        }
+        #dropZone input[type="file"] { display: none; }
+
+        /* Radial glow from center — pseudo element */
+        #dropZone::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 50%,
+                color-mix(in srgb, var(--accent) 0%, transparent) 0%,
+                transparent 68%);
+            transition: background 0.3s;
+            pointer-events: none;
+        }
+        #dropZone:hover::before {
+            background: radial-gradient(ellipse at 50% 50%,
+                color-mix(in srgb, var(--accent) 22%, transparent) 0%,
+                transparent 68%);
+        }
+        #dropZone.drag-active::before {
+            background: radial-gradient(ellipse at 50% 50%,
+                color-mix(in srgb, var(--accent) 35%, transparent) 0%,
+                transparent 65%);
+        }
+        #dropZone:hover {
+            border-color: var(--accent);
+            transform: scale(1.01);
+        }
+        #dropZone.drag-active {
+            border-color: var(--accent);
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        #dropZoneText {
+            font-size: 0.88rem; color: var(--text); font-weight: bold;
+            text-align: center; position: relative; z-index: 1;
+        }
+        #dropZoneSub {
+            font-size: 0.72rem; color: var(--text2);
+            text-align: center; position: relative; z-index: 1;
+        }
+        #removeBgLabel {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.76rem; color: var(--text2); cursor: pointer;
+            margin-top: 6px; padding: 2px; transition: color 0.15s;
+        }
+        #removeBgLabel:hover { color: var(--text); }
+
+        /* dynamicControls slides in from left */
+        #dynamicControls {
+            opacity: 0; pointer-events: none;
+            transform: translateX(-18px);
+            transition: opacity 0.4s ease 0.25s, transform 0.4s ease 0.25s;
+        }
+        body.image-loaded #dynamicControls {
+            opacity: 1; pointer-events: all; transform: translateX(0);
+        }
+
+        /* leftPaintsSection fades in */
+        #leftPaintsSection {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease 0.4s, transform 0.4s ease 0.4s;
+        }
+        body.image-loaded #leftPaintsSection {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* Master item compact */
+        #masterGrid .master-item {
+            padding: 3px 5px !important;
+            font-size: 0.72rem !important;
+            border-radius: 4px !important;
+        }
+        #masterGrid .master-item .swatch {
+            width: 14px !important; height: 14px !important;
+            margin-right: 5px !important;
+        }
+
+        /* ── Accent tints ── */
+        button.secondary:hover {
+            border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+        }
+        .sidebar-tab.active {
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, var(--bg2))) !important;
+            box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+        }
+        .counter-pill.blocks {
+            background: color-mix(in srgb, #5ec9a0 8%, var(--bg3));
+            border-color: color-mix(in srgb, #5ec9a0 28%, var(--border));
+        }
+        .counter-pill.paints {
+            background: color-mix(in srgb, var(--accent) 8%, var(--bg3));
+            border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+        }
+        #downloadSmall {
+            border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border2));
+        }
+        #modeToggle.active-inspect {
+            background: var(--accent) !important;
+            box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent) !important;
+        }
+
+        /* ── General hover polish ── */
+        button {
+            transition: background 0.18s, transform 0.12s, box-shadow 0.18s, color 0.18s, border-color 0.18s !important;
+        }
+        button:hover {
+            transform: translateY(-1px) scale(1.02) !important;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+        }
+        button:active { transform: translateY(1px) scale(0.97) !important; box-shadow: none; }
+        button:not(.secondary):hover {
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
+        .color-card {
+            transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s !important;
+        }
+        .color-card:hover {
+            transform: translateX(3px);
+            border-color: var(--border2) !important;
+            box-shadow: -3px 0 0 var(--accent);
+        }
+        .swatch { transition: transform 0.15s; }
+        .color-card:hover .swatch { transform: scale(1.15); }
+        .master-item {
+            transition: background 0.15s, border-color 0.15s, transform 0.12s !important;
+        }
+        .master-item:hover {
+            background: var(--border) !important;
+            border-color: var(--accent) !important;
+            transform: scale(1.03);
+        }
+        .sidebar-tab { transition: background 0.15s, color 0.15s, transform 0.12s !important; }
+        .sidebar-tab:hover:not(.active) { transform: translateY(-1px); }
+        .counter-pill { transition: box-shadow 0.2s, transform 0.15s; }
+        .counter-pill:hover { box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 18%, transparent); transform: scale(1.02); }
+        #buttcoinTotal { transition: box-shadow 0.2s, border-color 0.2s !important; }
+        #buttcoinTotal:hover { box-shadow: 0 0 16px color-mix(in srgb, var(--coin-bdr) 45%, transparent); }
+        .gs-row { transition: background 0.15s; }
+        .gs-row:hover { background: color-mix(in srgb, var(--card) 80%, var(--accent) 6%) !important; }
+        .gs-block-toggle-row { transition: background 0.15s, transform 0.12s !important; }
+        .gs-block-toggle-row:hover:not(.dep-disabled) { background: var(--border) !important; transform: translateX(3px); }
+        .viewport-frame { transition: border-color 0.2s, box-shadow 0.2s !important; }
+        .viewport-frame:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent); }
+        .viewport-frame.grabbing { cursor: grabbing !important; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 36%, transparent) !important; }
+        .tdot { transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), border-color 0.15s !important; }
+        .tdot:hover { transform: scale(1.35) !important; }
+        .tdot.active { transform: scale(1.2) !important; }
+        .ap-font-btn { transition: background 0.15s, color 0.15s, transform 0.12s !important; }
+        .ap-font-btn:hover:not(.active) { transform: translateX(4px) !important; border-color: var(--accent) !important; }
+        .ap-mode-btn { transition: background 0.15s, color 0.15s, transform 0.12s !important; }
+        .ap-mode-btn:hover:not(.active) { transform: translateY(-2px) scale(1.04) !important; }
+        #gridGearBtn { transition: background 0.2s, transform 0.2s !important; }
+        #gridGearBtn:hover { transform: rotate(25deg) scale(1.1) !important; }
+        #appearanceBtn { transition: background 0.2s, transform 0.2s, box-shadow 0.2s !important; }
+        #appearanceBtn:hover { transform: rotate(-15deg) scale(1.1) !important; }
+        #myPaintsBtn { transition: transform 0.15s !important; }
+        #myPaintsBtn:hover { transform: scale(1.3) rotate(10deg) !important; }
+        .gs-tab { transition: background 0.15s, transform 0.12s !important; }
+        .gs-tab:hover:not(.active) { transform: translateY(-1px) !important; background: var(--border2) !important; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent);
+            border-color: var(--accent) !important;
+            transition: box-shadow 0.15s;
+        }
+
+        /* ── Subtle ambient animations ── */
+        .header-section h1 img { animation: logoFloat 4s ease-in-out infinite; }
+        .header-section h1 img:last-child { animation-delay: 2s; }
+        @keyframes logoFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
+        .bc-icon { transition: transform 0.3s; }
+        #buttcoinTotal:hover .bc-icon { animation: coinSpin 1.2s linear infinite; }
+        @keyframes coinSpin { to { transform: rotateY(360deg); } }
+        #appearanceBtn { animation: btnPulse 5s ease-in-out infinite; }
+        @keyframes btnPulse {
+            0%,100%{box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+            50%{box-shadow:0 2px 16px color-mix(in srgb,var(--accent) 28%,transparent);}
+        }
+        .viewport-frame { animation: checkerDrift 30s linear infinite; }
+        @keyframes checkerDrift { 0%{background-position:0 0;} 100%{background-position:32px 32px;} }
+        html[data-animations="off"] * { animation: none !important; }
     </style>
 </head>
 <body>
@@ -857,6 +1076,17 @@
     </div>
     <hr class="ap-divider">
     <div>
+        <div class="ap-section-title">Music</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="font-size:0.72rem; color:var(--text2);">Grace FM — background music</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button id="musicPlayBtn" style="flex:1; padding:6px; border-radius:6px; background:var(--card); border:1px solid var(--border2); color:var(--text); font-family:inherit; font-size:0.85rem; cursor:pointer;">▶ Play</button>
+                <input type="range" id="musicVolume" min="0" max="100" value="30" style="flex:1; accent-color:var(--accent);">
+            </div>
+        </div>
+    </div>
+    <hr class="ap-divider">
+    <div>
         <div class="ap-section-title">Animations</div>
         <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text); cursor:pointer;">
             <input type="checkbox" id="animToggle" checked style="accent-color:var(--accent);">
@@ -873,10 +1103,10 @@
         </label>
     </div>
 </div>
-
 <div id="toast"></div>
 <div id="dropOverlay">📂 Drop image here</div>
 
+<div id="appShell">
 <div class="header-section">
     <h1><img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-right:10px; image-rendering:pixelated;">Yeeps Color Converter<img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-left:10px; image-rendering:pixelated;"></h1>
     <p>This was a random helpful tool i decided to make with the help of Claude</p>
@@ -886,8 +1116,17 @@
     <div class="viewer-section">
         <div class="viewer-inner">
         <div class="controls">
-            <input type="file" id="upload" accept="image/*">
-            
+            <div id="uploadArea">
+                <label id="dropZone" for="upload">
+                    <input type="file" id="upload" accept="image/*">
+                    <div id="dropZoneText">Drag &amp; drop or click to upload</div>
+                    <div id="dropZoneSub">PNG, JPG, WEBP, GIF and more</div>
+                </label>
+                <label id="removeBgLabel">
+                    <input type="checkbox" id="removeBgToggle" style="accent-color:var(--accent);"> Remove background before converting
+                </label>
+            </div>
+
             <div id="dynamicControls">
                 <div class="control-row">
                     <div class="input-group">
@@ -944,16 +1183,34 @@
             </div>
         </div>
 
-        <div class="viewport-frame" id="frame">
-            <div id="canvasContainer">
-                <canvas id="mainCanvas"></canvas>
+        <!-- Paint toggles — hidden until image loaded -->
+        <div id="leftPaintsSection" style="margin-top:10px; display:none; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0 2px;">
+                <span style="font-size:0.72rem; color:var(--text2); text-transform:uppercase; letter-spacing:1px;">Paints Toggle</span>
+                <span class="disclaimer" style="font-size:0.65rem; padding:2px 6px; margin:0;">Desert Update</span>
             </div>
+            <input type="text" id="masterSearchBar" placeholder="Search paints..." style="padding:5px 8px; border-radius:6px; border:1px solid var(--border2); background:var(--input-bg); color:var(--text); font-family:inherit; font-size:0.78rem; width:100%; box-sizing:border-box;">
+            <div id="masterGrid" style="overflow-y:auto; max-height:220px; display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap:4px;"></div>
         </div>
+
         </div><!-- end viewer-inner -->
     </div>
 
+    <div id="frameSection">
+        <div class="viewport-frame" id="frame">
+            <div id="canvasContainer">
+                <canvas id="mainCanvas"></canvas>
+                <canvas id="overlayCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
     <div class="palette-section" id="paletteSidebar">
-        <h2 style="margin-top:0">Paints in image</h2>
+        <div style="display:flex; gap:6px; margin-bottom:14px; flex-shrink:0;">
+            <button class="sidebar-tab active" id="tabPaints" onclick="switchSideTab('paints')">🎨 Paints Used</button>
+            <button class="sidebar-tab" id="tabBlocks" onclick="switchSideTab('blocks')">🧱 Blocks Used</button>
+        </div>
+        <div id="sidePaintsPanel">
         <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
             <button id="downloadImagePalette" style="width: 100%; padding: 10px; font-size: 0.9rem;">Download Palette Image</button>
             <button id="exportTxtBtn">Export Palette as .txt</button>
@@ -987,22 +1244,19 @@
                 <span class="cp-value" id="totalPaintsCount">—</span>
             </div>
         </div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <button id="toggleAllOwned" style="flex:1; font-size:0.8rem; padding:8px;">All Owned</button>
-            <button id="toggleAllUnowned" class="secondary" style="flex:1; font-size:0.8rem; padding:8px;">All Unowned</button>
-        </div>
+        <!-- owned toggle buttons removed, managed via My Paint Collection -->
         <input type="text" id="searchBar" placeholder="Search paints..." style="margin-bottom: 8px; flex-shrink: 0;">
         <div id="paletteStats"></div>
+        </div><!-- end sidePaintsPanel -->
+
+        <div id="sideBlocksPanel" style="display:none; flex-direction:column; gap:8px; overflow-y:auto; flex:1;">
+            <div class="gs-desc" style="flex-shrink:0;">Blocks used in current image (requires Block Optimization).</div>
+            <div id="sideBlockList" style="display:flex; flex-direction:column; gap:5px;"></div>
+        </div>
     </div>
 </div>
-
-<div class="master-section">
-    <h2 style="margin-bottom:5px">All paints</h2>
-    <span class="sub-text">toggle off paints you do not have or do not want to use</span>
-    <div class="disclaimer">THE PAINTS ARE ONLY UP TO DATE TO THE DESERT UPDATE</div>
-    <div class="master-grid" id="masterGrid"></div>
-</div>
-
+<!-- master removed -->
+</div><!-- end appShell -->
 <div id="cropModal" class="modal-backdrop">
     <div id="cropBox" class="modal-box">
         <h3>✂️ Crop Image</h3>
@@ -1112,7 +1366,7 @@
                     <button id="uniqueBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
                 </div>
                 <div class="gs-row">
-                    <label><input type="checkbox" id="gsUniqueBlocks" checked> Enable Unique Blocks</label>
+                    <label><input type="checkbox" id="gsUniqueBlocks"> Enable Unique Blocks</label>
                     <div class="gs-desc">Includes special blocks in optimization (Build Plate, Vending Machine).</div>
                     <div id="gsUniquePanel">
                         <div class="gs-unique-row" id="uniqRow_16x16">
@@ -1153,6 +1407,20 @@
         <div id="myPaintsList" style="overflow-y:auto; flex:1; display:grid; grid-template-columns:1fr 1fr; gap:6px;"></div>
     </div>
 </div>
+
+<div id="masterPaintsModal" class="modal-backdrop" style="z-index:9000; padding:16px; box-sizing:border-box;">
+    <div class="modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:14px; padding:20px; width:min(900px,96vw); max-height:90vh; display:flex; flex-direction:column; gap:12px; box-sizing:border-box;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div>
+                <h3 style="margin:0; font-size:1.05rem; color:var(--text);">🎨 All Paints</h3>
+                <div class="disclaimer" style="margin:6px 0 0; padding:6px 10px; font-size:0.75rem;">THE PAINTS ARE ONLY UP TO DATE TO THE DESERT UPDATE</div>
+            </div>
+            <button id="masterPaintsClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit; flex-shrink:0;">✕</button>
+        </div>
+    </div>
+</div>
+
+<div id="hoverTooltip"><span id="hoverTipColor"></span><span id="hoverTipCount"></span><span id="hoverTipBlock"></span></div>
 
 <script>
     const palette = [
@@ -1241,20 +1509,20 @@
     // Yeeps block definitions — sorted by priority (area DESC, per official list)
     // sideways:true = off by default, shown in "Sideways Blocks" section in the Blocks tab
     const YEEPS_BLOCK_DEFS = [
-        { key:'16x16', label:'Build Plate (16×16)',            type:'Build Plate',           w:16, h:16, active:true  }, // P1  area 256
+        { key:'16x16', label:'Build Plate (16×16)',            type:'Build Plate',           w:16, h:16, active:false, unique:true }, // P1  area 256
         { key:'8x8',   label:'Wood Block (8×8)',               type:'Wood Block',            w:8,  h:8,  active:true  }, // P2  area 64
         { key:'4x8',   label:'Wood Block (4×8)',               type:'Wood Block',            w:4,  h:8,  active:true  }, // P3  area 32
         { key:'2x16',  label:'Wood Block (2×16)',              type:'Wood Block',            w:2,  h:16, active:true  }, // P4  area 32
-        { key:'4x6',   label:'Horror Table (4×6)',             type:'Horror Table',          w:4,  h:6,  active:true,  unique:true }, // P5  area 24
+        { key:'4x6',   label:'Horror Table (4×6)',             type:'Horror Table',          w:4,  h:6,  active:false, unique:true }, // P5  area 24
         { key:'4x4',   label:'Wood Block (4×4)',               type:'Wood Block',            w:4,  h:4,  active:true  }, // P6  area 16
         { key:'2x8',   label:'Wood Block (2×8)',               type:'Wood Block',            w:2,  h:8,  active:true  }, // P7  area 16
         { key:'1x16',  label:'Wood Block (1×16)',              type:'Wood Block',            w:1,  h:16, active:false, sideways:true }, // P8  area 16 — sideways, off by default
         { key:'2x4',   label:'Wood Block (2×4)',               type:'Wood Block',            w:2,  h:4,  active:true  }, // P9  area 8
         { key:'1x8',   label:'Wood Block (1×8)',               type:'Wood Block',            w:1,  h:8,  active:true  }, // P10 area 8
-        { key:'3x2',   label:'Vending Machine (3×2)',          type:'Vending Machine',       w:3,  h:2,  active:true  }, // P11 area 6
+        { key:'3x2',   label:'Vending Machine (3×2)',          type:'Vending Machine',       w:3,  h:2,  active:false, unique:true }, // P11 area 6
         { key:'2x2',   label:'Wood Block (2×2)',               type:'Wood Block',            w:2,  h:2,  active:true  }, // P12 area 4
         { key:'1x4',   label:'Wood Block (1×4)',               type:'Wood Block',            w:1,  h:4,  active:true  }, // P13 area 4
-        { key:'1x3',   label:'Sideways Vending Machine (1×3)', type:'Sideways Vending Machine', w:1, h:3, active:false, sideways:true }, // P14 area 3 — sideways, off by default
+        { key:'1x3',   label:'Sideways Vending Machine (1×3)', type:'Sideways Vending Machine', w:1, h:3, active:false, sideways:true, unique:true }, // P14 area 3 — sideways, off by default
         { key:'1x2',   label:'Wood Block (1×2)',               type:'Wood Block',            w:1,  h:2,  active:true  }, // P15 area 2
         { key:'1x1',   label:'Wood Block (1×1)',               type:'Wood Block',            w:1,  h:1,  active:true  }, // P16 area 1
     ];
@@ -1647,6 +1915,25 @@
         }
 
         const imageData = srcCtx.getImageData(0, 0, fw, fh);
+
+        // Background removal — if toggled, make near-white and near-bg pixels transparent
+        if (document.getElementById('removeBgToggle') && document.getElementById('removeBgToggle').checked) {
+            const bgData = imageData.data;
+            // Sample corner pixels to determine background color
+            function getBgSample() {
+                const corners = [[0,0],[fw-1,0],[0,fh-1],[fw-1,fh-1]];
+                let r=0,g=0,b=0;
+                corners.forEach(([x,y])=>{ const i=(y*fw+x)*4; r+=bgData[i];g+=bgData[i+1];b+=bgData[i+2]; });
+                return [r/4,g/4,b/4];
+            }
+            const [bgR,bgG,bgB] = getBgSample();
+            const threshold = 40;
+            for (let pi=0; pi<bgData.length; pi+=4) {
+                if (bgData[pi+3] < 32) continue;
+                const dr=bgData[pi]-bgR, dg=bgData[pi+1]-bgG, db=bgData[pi+2]-bgB;
+                if (Math.sqrt(dr*dr+dg*dg+db*db) < threshold) bgData[pi+3] = 0;
+            }
+        }
         const data = imageData.data;
 
         // ── Dithering ──────────────────────────────────────────────────────
@@ -1785,7 +2072,7 @@
         renderCanvas();
         resText.value = w;
         renderStats();
-        applyTransform();
+        if (typeof fitToView === 'function') fitToView(); else applyTransform();
     }
 
     function updateButtcoinTotal() {
@@ -1844,25 +2131,8 @@
                 infoDiv.style.flex = '1';
                 infoDiv.innerHTML = `<b>${color.name}</b><br><span style="font-size:0.8rem; opacity:0.6">${currentCounts[i].toLocaleString()} px &nbsp;·&nbsp; ${pct}%</span>`;
 
-                const ownedLabel = document.createElement('label');
-                ownedLabel.className = 'owned-check';
-                ownedLabel.title = 'Check if you already own this paint';
-
-                const ownedCb = document.createElement('input');
-                ownedCb.type = 'checkbox';
-                ownedCb.checked = ownedPaints.has(i);
-                ownedCb.onchange = () => {
-                    if (ownedCb.checked) { ownedPaints.add(i); } else { ownedPaints.delete(i); }
-                    saveOwnedPaints();
-                    updateButtcoinTotal();
-                };
-
-                ownedLabel.appendChild(ownedCb);
-                ownedLabel.appendChild(document.createTextNode('owned'));
-
                 card.innerHTML = `<div class="swatch" style="background:${color.hex}"></div>`;
                 card.appendChild(infoDiv);
-                card.appendChild(ownedLabel);
 
                 statsContainer.appendChild(card);
                 cardIndex++;
@@ -1875,9 +2145,20 @@
     // Pan state — declared here so applyTransform can use them
     let panX = 0, panY = 0;
 
+    // panX/panY are offsets from center: 0,0 = canvas perfectly centered in frame
+    // positive panX = shifted right (canvas moves left relative to view)
     function applyTransform() {
         const scale = zoomSlider.value / 100;
-        container.style.transform = `translate(-${panX}px, -${panY}px) scale(${scale})`;
+        const frame = document.getElementById('frame');
+        const fw = frame.clientWidth, fh = frame.clientHeight;
+        const cw = mainCanvas.width * scale, ch = mainCanvas.height * scale;
+        // Center position of canvas top-left
+        const cx = (fw - cw) / 2 - panX;
+        const cy = (fh - ch) / 2 - panY;
+        container.style.left = cx + 'px';
+        container.style.top  = cy + 'px';
+        container.style.transform = `scale(${scale})`;
+        container.style.transformOrigin = '0 0';
         zoomText.value = zoomSlider.value;
     }
 
@@ -1906,18 +2187,20 @@
     document.getElementById('searchBar').oninput = renderStats;
     resSlider.oninput = updateDisplay;
     zoomSlider.oninput = applyTransform;
-    document.getElementById('resetZoom').onclick = () => { zoomSlider.value = 100; applyTransform(); };
-    document.getElementById('fitView').onclick = () => {
+    document.getElementById('resetZoom').onclick = () => { zoomSlider.value = 100; panX = 0; panY = 0; applyTransform(); };
+    function fitToView() {
+        if (!mainCanvas.width || !mainCanvas.height) return;
         const frame = document.getElementById('frame');
-        const frameStyle = getComputedStyle(frame);
-        const borderX = parseFloat(frameStyle.borderLeftWidth) + parseFloat(frameStyle.borderRightWidth);
-        const borderY = parseFloat(frameStyle.borderTopWidth) + parseFloat(frameStyle.borderBottomWidth);
-        const availW = frame.clientWidth - borderX;
-        const availH = frame.clientHeight - borderY;
-        const scaleToFit = Math.min(availW / mainCanvas.width, availH / mainCanvas.height);
-        zoomSlider.value = Math.max(10, Math.min(4000, Math.floor(scaleToFit * 100)));
+        const fw = frame.clientWidth, fh = frame.clientHeight;
+        // Scale to fit entirely inside frame with a small margin
+        const margin = 24;
+        const scaleToFit = Math.min((fw - margin) / mainCanvas.width, (fh - margin) / mainCanvas.height);
+        const newScale = Math.max(10, Math.min(4000, Math.floor(scaleToFit * 100)));
+        zoomSlider.value = newScale;
+        panX = 0; panY = 0; // panX=0,panY=0 = perfectly centered with new coordinate system
         applyTransform();
-    };
+    }
+    document.getElementById('fitView').onclick = fitToView;
     function doDownload(big) {
         const { colors, w, h } = mappedPixels || {};
         if (!colors) return;
@@ -2021,14 +2304,7 @@
         showToast('✅ Palette image downloaded!');
     };
 
-    document.getElementById('toggleAllOwned').onclick = () => {
-        palette.forEach((color, i) => { if (currentCounts[i] > 0) ownedPaints.add(i); });
-        saveOwnedPaints(); renderStats();
-    };
-    document.getElementById('toggleAllUnowned').onclick = () => {
-        ownedPaints.clear();
-        saveOwnedPaints(); renderStats();
-    };
+    // toggleAllOwned/Unowned removed (ownership managed via My Paint Collection)
 
     // Export palette as .txt
     document.getElementById('exportTxtBtn').onclick = () => {
@@ -2508,7 +2784,8 @@
             ? '🔍 Inspect: ON<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint & block</span>'
             : '🔍 Inspect: OFF<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint & block</span>';
         btn.style.background = on ? 'var(--accent)' : '';
-        frameEl.style.cursor = on ? 'crosshair' : 'grab';
+        btn.classList.toggle('active-inspect', on);
+        frameEl.style.cursor = on ? 'crosshair' : 'default';
         if (!on) {
             document.getElementById('paintSelected').textContent = 'Click a pixel in Inspect mode';
             document.getElementById('blockSelected').style.display = 'none';
@@ -2530,19 +2807,9 @@
     });
 
     // ── Pan helpers ──────────────────────────────────────────────────────────
-    function clampPan() {
-        const scale = zoomSlider.value / 100;
-        const frame = document.getElementById('frame');
-        const maxX = Math.max(0, mainCanvas.width  * scale - frame.clientWidth);
-        const maxY = Math.max(0, mainCanvas.height * scale - frame.clientHeight);
-        panX = Math.max(0, Math.min(panX, maxX));
-        panY = Math.max(0, Math.min(panY, maxY));
-    }
+    function clampPan() { /* no constraints — free panning */ }
 
-    function applyPan() {
-        const scale = zoomSlider.value / 100;
-        container.style.transform = `translate(-${panX}px, -${panY}px) scale(${scale})`;
-    }
+    function applyPan() { applyTransform(); }
 
     // Scroll wheel: pan (shift/ctrl = zoom)
     document.getElementById('frame').addEventListener('wheel', (e) => {
@@ -2557,7 +2824,7 @@
         } else {
             panX += e.deltaX || 0;
             panY += e.deltaY;
-            clampPan(); applyPan();
+            clampPan(); applyTransform();
         }
     }, { passive: false });
 
@@ -2565,20 +2832,19 @@
     frameEl.addEventListener('mousedown', (e) => {
         if (!img || inspectMode) return;
         isDragging = true;
-        dragStartX = e.clientX; dragStartY = e.clientY;
-        panStartX = panX; panStartY = panY;
-        frameEl.style.cursor = 'grabbing';
+        frameEl.classList.add('grabbing');
         e.preventDefault();
     });
     window.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-        panX = panStartX - (e.clientX - dragStartX);
-        panY = panStartY - (e.clientY - dragStartY);
-        clampPan(); applyPan();
+        // Use movementX/Y for pixel-perfect per-frame delta — no drift, no jump
+        panX -= e.movementX;
+        panY -= e.movementY;
+        applyTransform();
     });
     window.addEventListener('mouseup', () => {
         isDragging = false;
-        if (!inspectMode) frameEl.style.cursor = 'grab';
+        frameEl.classList.remove('grabbing');
     });
 
     // ── Unified touch handler ────────────────────────────────────────────────
@@ -2651,6 +2917,7 @@
             img = new Image();
             img.onload = () => {
                 document.body.classList.add('image-loaded');
+                document.getElementById('leftPaintsSection').style.display = 'flex';
                 panX = 0; panY = 0;
                 resSlider.max = 256;
                 resSlider.value = Math.min(256, Math.max(img.width, img.height));
@@ -2660,6 +2927,8 @@
         };
         reader.readAsDataURL(file);
     }
+
+    const dropZoneEl = document.getElementById('dropZone');
 
     ['dragenter', 'dragover'].forEach(evt => {
         document.addEventListener(evt, (e) => {
@@ -2674,6 +2943,26 @@
             }
         });
     });
+
+    // Drag-over the drop zone itself — highlight it
+    if (dropZoneEl) {
+        ['dragenter','dragover'].forEach(evt => {
+            dropZoneEl.addEventListener(evt, (e) => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneEl.classList.add('drag-active');
+            });
+        });
+        ['dragleave','dragend'].forEach(evt => {
+            dropZoneEl.addEventListener(evt, () => dropZoneEl.classList.remove('drag-active'));
+        });
+        dropZoneEl.addEventListener('drop', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            dropZoneEl.classList.remove('drag-active');
+            dropOverlay.classList.remove('active');
+            loadImageFile(e.dataTransfer.files[0]);
+        });
+    }
+
     document.addEventListener('drop', (e) => {
         e.preventDefault();
         dropOverlay.classList.remove('active');
@@ -3144,11 +3433,12 @@
     }
 
     function syncCollectionToOwned() {
-        // Sync my collection into ownedPaints for the current image's cost display
+        // Rebuild ownedPaints entirely from myCollection so unchecking works
+        ownedPaints.clear();
         palette.forEach((color, i) => {
             if (myCollection.has(color.hex)) ownedPaints.add(i);
-            // Don't remove — user may have manually checked some
         });
+        saveOwnedPaints();
         updateButtcoinTotal();
     }
 
@@ -3174,7 +3464,196 @@
 
     // On load, sync collection into owned paints
     syncCollectionToOwned();
-    initMasterList();
+
+    // ── Sidebar tabs ──────────────────────────────────────────────────────────
+    function switchSideTab(tab) {
+        const paintsPanel = document.getElementById('sidePaintsPanel');
+        const blocksPanel = document.getElementById('sideBlocksPanel');
+        const tabP = document.getElementById('tabPaints');
+        const tabB = document.getElementById('tabBlocks');
+        if (tab === 'paints') {
+            paintsPanel.style.display = 'flex';
+            blocksPanel.style.display = 'none';
+            tabP.classList.add('active'); tabB.classList.remove('active');
+        } else {
+            paintsPanel.style.display = 'none';
+            blocksPanel.style.display = 'flex';
+            tabP.classList.remove('active'); tabB.classList.add('active');
+            updateSideBlockList();
+        }
+    }
+    function updateSideBlockList() {
+        const listEl = document.getElementById('sideBlockList');
+        if (!listEl) return;
+        const result = getBlockGridResult();
+        if (!result) { listEl.innerHTML = '<div style="color:var(--text3);font-size:0.8rem;">Load an image with block optimization on</div>'; return; }
+        const { blockCounts } = result;
+        listEl.innerHTML = '';
+        let any = false;
+        YEEPS_BLOCK_DEFS.forEach(def => {
+            const count = blockCounts[def.key] || 0;
+            if (!count) return;
+            any = true;
+            const row = document.createElement('div');
+            row.className = 'gs-block-count-row';
+            row.innerHTML = `<span class="gs-bc-label">${def.label}</span><span class="gs-bc-count">${count.toLocaleString()}</span>`;
+            listEl.appendChild(row);
+        });
+        if (!any) listEl.innerHTML = '<div style="color:var(--text3);font-size:0.8rem;">No blocks placed yet</div>';
+    }
+
+    // ── All Paints modal ──────────────────────────────────────────────────────
+    document.getElementById('masterPaintsClose').onclick = () => closeModal(document.getElementById('masterPaintsModal'));
+    document.getElementById('masterPaintsModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('masterPaintsModal')) closeModal(document.getElementById('masterPaintsModal'));
+    });
+
+    // ── Hover tooltip in inspect mode (desktop only) ──────────────────────────
+    const hoverTooltip = document.getElementById('hoverTooltip');
+    let hoverEnabled = true; // always on when inspect mode is on
+
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const overlayCtx = overlayCanvas.getContext('2d');
+    let lastHoverBlock = null; // { tlx, tly, bw, bh } — to avoid redraw on same block
+
+    function clearOverlay() {
+        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        lastHoverBlock = null;
+    }
+
+    function drawBlockHighlight(tlx, tly, bw, bh) {
+        // Skip if same block as last time
+        if (lastHoverBlock && lastHoverBlock.tlx===tlx && lastHoverBlock.tly===tly &&
+            lastHoverBlock.bw===bw && lastHoverBlock.bh===bh) return;
+        lastHoverBlock = { tlx, tly, bw, bh };
+
+        overlayCanvas.width  = mainCanvas.width;
+        overlayCanvas.height = mainCanvas.height;
+        overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+        const x = tlx * BLOCK, y = tly * BLOCK, w2 = bw * BLOCK, h2 = bh * BLOCK;
+        // White semi-transparent fill
+        overlayCtx.fillStyle = 'rgba(255,255,255,0.18)';
+        overlayCtx.fillRect(x, y, w2, h2);
+        // Bright border
+        overlayCtx.strokeStyle = 'rgba(255,255,255,0.85)';
+        overlayCtx.lineWidth = 2;
+        overlayCtx.strokeRect(x + 1, y + 1, w2 - 2, h2 - 2);
+    }
+
+    function findBlockTopLeft(px, py, bw, bh) {
+        // Given a pixel inside a block, find the top-left corner using edges
+        const result = getBlockGridResult();
+        if (!result) return { tlx: px, tly: py };
+        const { edges } = result;
+        const w = mappedPixels.w, h = mappedPixels.h;
+        // Walk left then up until we hit an edge boundary
+        let tlx = px, tly = py;
+        while (tlx > 0 && !edges.has(`v,${tlx},${tly}`)) tlx--;
+        while (tly > 0 && !edges.has(`h,${tlx},${tly}`)) tly--;
+        return { tlx, tly };
+    }
+
+    mainCanvas.addEventListener('mousemove', (e) => {
+        if (!inspectMode) { hoverTooltip.classList.remove('visible'); clearOverlay(); return; }
+        const rect = mainCanvas.getBoundingClientRect();
+        const scale = zoomSlider.value / 100;
+        const px = Math.floor((e.clientX - rect.left) / scale / BLOCK);
+        const py = Math.floor((e.clientY - rect.top)  / scale / BLOCK);
+        const c = (mappedPixels && px >= 0 && py >= 0 && px < mappedPixels.w && py < mappedPixels.h)
+            ? mappedPixels.colors[py * mappedPixels.w + px] : null;
+
+        if (!c) { hoverTooltip.classList.remove('visible'); clearOverlay(); return; }
+
+        // Paint name + count
+        const pidx = palette.findIndex(p => p.hex === c.hex);
+        const pname = pidx >= 0 ? palette[pidx].name : c.hex;
+        const pcount = pidx >= 0 ? (currentCounts[pidx] || 0) : 0;
+        document.getElementById('hoverTipColor').textContent = pname;
+        document.getElementById('hoverTipColor').style.color = c.hex;
+        document.getElementById('hoverTipCount').textContent = `Quantity: ${pcount.toLocaleString()}`;
+
+        // Block info + highlight
+        const blockOpt = document.getElementById('gsBlockOpt') && document.getElementById('gsBlockOpt').checked;
+        const blockEl = document.getElementById('hoverTipBlock');
+        if (blockOpt) {
+            const b = getBlockAt(px, py);
+            if (b) {
+                blockEl.textContent = `Block: ${blockLabel(b.w, b.h)}`;
+                blockEl.style.display = 'block';
+                // Find top-left and draw highlight
+                const { tlx, tly } = findBlockTopLeft(px, py, b.w, b.h);
+                drawBlockHighlight(tlx, tly, b.w, b.h);
+            } else {
+                blockEl.style.display = 'none';
+                clearOverlay();
+            }
+        } else {
+            blockEl.style.display = 'none';
+            // Highlight single pixel
+            drawBlockHighlight(px, py, 1, 1);
+        }
+
+        // Position tooltip near cursor, avoid overflow
+        hoverTooltip.classList.add('visible');
+        const tw = hoverTooltip.offsetWidth || 180, th = hoverTooltip.offsetHeight || 80;
+        let tx = e.clientX + 16, ty = e.clientY + 16;
+        if (tx + tw > window.innerWidth)  tx = e.clientX - tw - 8;
+        if (ty + th > window.innerHeight) ty = e.clientY - th - 8;
+        hoverTooltip.style.left = tx + 'px';
+        hoverTooltip.style.top  = ty + 'px';
+    });
+    mainCanvas.addEventListener('mouseleave', () => { hoverTooltip.classList.remove('visible'); clearOverlay(); });
+
+    // ── Background removal toggle ─────────────────────────────────────────────
+    // Applied during image loading in updateDisplay — flag read there
+
+    // ── Music player (Grace FM) ───────────────────────────────────────────────
+    const MUSIC_URL = 'https://www.youtube.com/watch?v=jfKfPfyJRdk'; // lofi girl placeholder
+    // Use a free streamable source instead — embed via audio element with a proxy isn't possible
+    // Use a royalty-free lofi stream that works cross-origin
+    const musicAudio = new Audio();
+    musicAudio.loop = true;
+    musicAudio.volume = 0.3;
+    // Grace FM / lofi stream — using a direct streamable URL
+    // Since YouTube can't be directly embedded in audio, use a working lofi radio stream
+    musicAudio.src = 'https://res.cloudinary.com/dqu51shdl/video/upload/v1773958108/Grace_FM_msexje.mp3';
+    let musicPlaying = false;
+    const musicBtn = document.getElementById('musicPlayBtn');
+    const musicVol = document.getElementById('musicVolume');
+    if (musicBtn) {
+        musicBtn.onclick = () => {
+            if (musicPlaying) {
+                musicAudio.pause();
+                musicPlaying = false;
+                musicBtn.textContent = '▶ Play';
+                musicBtn.style.background = 'var(--card)';
+            } else {
+                musicAudio.play().catch(() => {});
+                musicPlaying = true;
+                musicBtn.textContent = '⏸ Pause';
+                musicBtn.style.background = 'var(--accent)';
+                musicBtn.style.color = '#fff';
+            }
+        };
+    }
+    if (musicVol) {
+        musicVol.oninput = () => { musicAudio.volume = musicVol.value / 100; };
+    }
+
+
+        initMasterList();
+    // Master paints search filter
+    const masterSearchBar = document.getElementById('masterSearchBar');
+    if (masterSearchBar) {
+        masterSearchBar.addEventListener('input', () => {
+            const q = masterSearchBar.value.toLowerCase();
+            document.querySelectorAll('#masterGrid .master-item').forEach(item => {
+                const name = item.querySelector('span') ? item.querySelector('span').textContent.toLowerCase() : '';
+                item.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+    }
 </script>
 
 </body>
