@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1236,11 +1236,17 @@
             return { sx, sy, bw:1, bh:1, key:'1x1', area:1 };
         }
 
+        // pixelBlockMap: for each pixel index, store the block dims that cover it
+        const pixelBlockMap = new Array(w * h).fill(null);
+
         function placeBlock(sx, sy, bw, bh, key) {
             addBlockEdges(sx, sy, bw, bh);
             for (let dy = 0; dy < bh; dy++)
-                for (let dx = 0; dx < bw; dx++)
-                    used[(sy+dy)*w+(sx+dx)] = 1;
+                for (let dx = 0; dx < bw; dx++) {
+                    const idx = (sy+dy)*w+(sx+dx);
+                    used[idx] = 1;
+                    pixelBlockMap[idx] = { w: bw, h: bh };
+                }
             blockCounts[key] = (blockCounts[key] || 0) + 1;
         }
 
@@ -1353,11 +1359,12 @@
                 const sx = i%w, sy = Math.floor(i/w);
                 addBlockEdges(sx, sy, 1, 1);
                 blockCounts['1x1'] = (blockCounts['1x1']||0)+1;
+                pixelBlockMap[i] = { w: 1, h: 1 };
                 used[i] = 1;
             }
         }
 
-        return { edges, blockCounts };
+        return { edges, blockCounts, pixelBlockMap };
     }
 
     let blockGridCache = null; // { edges, blockCounts }
@@ -2285,33 +2292,28 @@
     }
 
     function getBlockAt(px, py) {
-        // Find which optimized block contains this pixel
         if (!document.getElementById('gsBlockOpt') || !document.getElementById('gsBlockOpt').checked) return null;
         if (!mappedPixels) return null;
-        const edges = getBlockGridEdges();
-        if (!edges) return null;
-        const { colors, w, h } = mappedPixels;
-        const baseColor = colors[py * w + px];
-        if (!baseColor) return null;
-        // Find the block extents by checking which block was placed here
-        // Re-run a local search for the block containing px,py
-        for (const [bw, bh] of getActiveBlocks()) {
-            // Check all possible top-left corners that could contain (px,py)
-            for (let by = Math.max(0, py - bh + 1); by <= py && by + bh <= h; by++) {
-                for (let bx = Math.max(0, px - bw + 1); bx <= px && bx + bw <= w; bx++) {
-                    let ok = true;
-                    for (let dy = 0; dy < bh && ok; dy++) {
-                        for (let dx = 0; dx < bw && ok; dx++) {
-                            const c = colors[(by+dy)*w+(bx+dx)];
-                            if (!c || c.hex !== baseColor.hex) ok = false;
-                        }
-                    }
-                    if (ok && edges.has(`v,${bx},${by}`) && edges.has(`h,${bx},${by}`)) {
-                        return { w: bw, h: bh };
-                    }
-                }
-            }
-        }
+        const result = getBlockGridResult();
+        if (!result || !result.pixelBlockMap) return null;
+        const idx = py * mappedPixels.w + px;
+        const b = result.pixelBlockMap[idx];
+        if (!b) return { w: 1, h: 1 };
+
+        // Cross-validate: find the top-left of the block this pixel belongs to
+        // by scanning backward to find the edge boundary that matches b.w x b.h
+        const { edges } = result;
+        const w = mappedPixels.w;
+        // Scan up and left to find the top-left corner of this block
+        let tlx = px, tly = py;
+        // Walk left while same block size and no left vertical edge
+        while (tlx > 0 && !edges.has(`v,${tlx},${tly}`)) tlx--;
+        while (tly > 0 && !edges.has(`h,${tlx},${tly}`)) tly--;
+        // The block at this top-left should have edges forming a b.w x b.h rectangle
+        const hasTopLeft = edges.has(`v,${tlx},${tly}`) && edges.has(`h,${tlx},${tly}`);
+        const hasBottomRight = edges.has(`v,${tlx + b.w},${tly}`) && edges.has(`h,${tlx},${tly + b.h}`);
+        if (hasTopLeft && hasBottomRight) return { w: b.w, h: b.h };
+        // Fallback: return 1x1
         return { w: 1, h: 1 };
     }
 
