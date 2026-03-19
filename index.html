@@ -842,6 +842,7 @@
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <button id="toggleGrid" class="secondary" style="flex:1; font-size:0.9rem; min-width:90px;">Grid: OFF</button>
                     <button id="gridGearBtn" class="secondary" style="font-size:1rem; padding:6px 10px;" title="Grid Settings">⚙️</button>
+                    <span style="font-size:0.68rem; color:var(--text2); flex-shrink:0; line-height:1.2;">Block opt<br>in here!</span>
                     <label style="font-size:0.8rem; white-space:nowrap; flex-shrink:0;">X:
                         <input type="number" id="gridOffsetX" value="0" step="0.05" class="num-input" style="width:52px;">
                     </label>
@@ -859,7 +860,8 @@
                 <div class="btn-group">
                     <button id="fitView" class="secondary">Fit to View</button>
                     <button id="resetZoom" class="secondary">Reset Zoom</button>
-                    <button id="download" style="grid-column: span 2;">Download PNG</button>
+                    <button id="downloadSmall" class="secondary">⬇ Small</button>
+                    <button id="downloadBig">⬇ Big (grid-ready)</button>
                 </div>
             </div>
         </div>
@@ -893,7 +895,8 @@
                 onerror="this.style.display='none'; document.getElementById('bcIconFallback').style.display='inline';"
             >
             <span class="bc-icon-fallback" id="bcIconFallback" style="display:none;">🪙</span>
-            <span id="buttcoinCount">0 Buttcoins needed</span>
+            <span id="buttcoinCount" style="flex:1;">0 Buttcoins needed</span>
+            <button id="myPaintsBtn" title="My Paint Collection" style="background:none; border:none; cursor:pointer; font-size:1rem; padding:2px 4px; flex-shrink:0;" >🎨</button>
         </div>
 
         <div id="imageCounters">
@@ -961,10 +964,9 @@
     <div id="gridSettingsBox">
         <h3>⚙️ Grid Settings</h3>
 
-        <!-- Tabs -->
+        <!-- Tabs: General + Block Count only -->
         <div class="gs-tabs">
             <button class="gs-tab active" data-tab="gsTabGeneral">General</button>
-            <button class="gs-tab" data-tab="gsTabBlocks">Blocks</button>
             <button class="gs-tab" data-tab="gsTabBlockList">Block Count</button>
         </div>
 
@@ -973,23 +975,11 @@
             <div class="gs-row">
                 <label><input type="checkbox" id="gsBlockOpt"> Block Optimization</label>
                 <div class="gs-desc">Draws grid boundaries around optimized Yeeps block placements. Uses the largest valid block for each same-color region.</div>
-            </div>
-            <div class="gs-row" id="gsUniqueRow" style="display:none;">
-                <label><input type="checkbox" id="gsUniqueBlocks" checked> Enable Unique Blocks</label>
-                <div class="gs-desc">Includes special blocks in optimization (Build Plate, Vending Machine). Toggle individual ones below.</div>
-                <div id="gsUniquePanel">
-                    <!-- Build Plate -->
-                    <div class="gs-unique-row" id="uniqRow_16x16">
-                        <label><input type="checkbox" id="uniq_16x16" checked> Build Plate (16×16)</label>
-                    </div>
-                    <!-- Vending Machine + sideways child -->
-                    <div class="gs-unique-row" id="uniqRow_3x2">
-                        <label><input type="checkbox" id="uniq_3x2" checked> Vending Machine (3×2)</label>
-                        <div class="gs-unique-child" id="uniqChild_3x2">
-                            <label id="uniqSidewaysLabel_3x2"><input type="checkbox" id="uniq_1x3"> Sideways Vending Machine (1×3)</label>
-                            <div class="gs-warn" id="uniqWarn_1x3">Enable Vending Machine before enabling this!</div>
-                        </div>
-                    </div>
+                <!-- Sub-buttons that appear when block opt is on -->
+                <div id="gsBlockOptSub" style="display:none; flex-direction:column; gap:6px; margin-top:6px;">
+                    <button id="gsMaxOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:inherit;">⚡ Max Optimization (enable all blocks)</button>
+                    <button id="gsChooseBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🧱 Choose Blocks!</button>
+                    <button id="gsUniqueBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">⭐ Unique Blocks</button>
                 </div>
             </div>
             <div class="gs-row">
@@ -1016,12 +1006,6 @@
             </div>
         </div>
 
-        <!-- Blocks toggle tab -->
-        <div class="gs-tabpanel" id="gsTabBlocks" style="display:none;">
-            <div class="gs-desc" style="margin-bottom:8px;">Toggle off blocks you don't own. Disabled blocks are skipped during optimization.</div>
-            <div id="gsBlockToggles"></div>
-        </div>
-
         <!-- Block count tab -->
         <div class="gs-tabpanel" id="gsTabBlockList" style="display:none;">
             <div class="gs-desc" style="margin-bottom:8px;">How many of each block the current image needs (requires Block Optimization).</div>
@@ -1029,6 +1013,66 @@
         </div>
 
         <button id="gridSettingsClose" style="background:var(--btn-sec); margin-top:4px;">Done</button>
+
+        <!-- Choose Blocks sub-modal -->
+        <div id="chooseBlocksModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:8000; align-items:center; justify-content:center;">
+            <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); max-height:85vh; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <h3 style="margin:0; font-size:1rem; color:var(--text);">🧱 Choose Blocks</h3>
+                    <button id="chooseBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
+                </div>
+                <div class="gs-desc">Toggle off blocks you don't own. Disabled blocks are skipped during optimization.</div>
+                <div id="gsBlockToggles" style="overflow-y:auto; flex:1;"></div>
+            </div>
+        </div>
+
+        <!-- Unique Blocks sub-modal -->
+        <div id="uniqueBlocksModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:8000; align-items:center; justify-content:center;">
+            <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(360px,90vw); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <h3 style="margin:0; font-size:1rem; color:var(--text);">⭐ Unique Blocks</h3>
+                    <button id="uniqueBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
+                </div>
+                <div class="gs-row">
+                    <label><input type="checkbox" id="gsUniqueBlocks" checked> Enable Unique Blocks</label>
+                    <div class="gs-desc">Includes special blocks in optimization (Build Plate, Vending Machine).</div>
+                    <div id="gsUniquePanel">
+                        <div class="gs-unique-row" id="uniqRow_16x16">
+                            <label><input type="checkbox" id="uniq_16x16" checked> Build Plate (16×16)</label>
+                        </div>
+                        <div class="gs-unique-row" id="uniqRow_3x2">
+                            <label><input type="checkbox" id="uniq_3x2" checked> Vending Machine (3×2)</label>
+                            <div class="gs-unique-child" id="uniqChild_3x2">
+                                <label id="uniqSidewaysLabel_3x2"><input type="checkbox" id="uniq_1x3"> Sideways Vending Machine (1×3)</label>
+                                <div class="gs-warn" id="uniqWarn_1x3">Enable Vending Machine before enabling this!</div>
+                            </div>
+                        </div>
+                        <div class="gs-unique-row" id="uniqRow_4x6">
+                            <label><input type="checkbox" id="uniq_4x6" checked> Horror Table (4×6) <span style="color:#e05555; font-size:0.72rem; margin-left:4px;">(ONLY MAROON)</span></label>
+                        </div>
+                    </div>
+                </div>
+                <button id="uniqueBlocksDone" style="background:var(--accent); border:none; border-radius:6px; padding:8px; cursor:pointer; color:#fff; font-family:inherit;">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="myPaintsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9000; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:14px; padding:20px; width:min(480px,96vw); max-height:88vh; display:flex; flex-direction:column; gap:12px; box-sizing:border-box;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+            <div>
+                <h3 style="margin:0; font-size:1.05rem; color:var(--text);">🎨 My Paint Collection</h3>
+                <div style="font-size:0.72rem; color:var(--text2); margin-top:3px;">Check off paints you own. Saves automatically — mark new ones when you buy them!</div>
+            </div>
+            <button id="myPaintsClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit; flex-shrink:0;">✕</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button id="myPaintsAllOwned" style="flex:1; padding:7px; font-size:0.8rem; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:inherit;">All Owned</button>
+            <button id="myPaintsNoneOwned" style="flex:1; padding:7px; font-size:0.8rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">None Owned</button>
+        </div>
+        <div style="font-size:0.8rem; color:var(--text2);">Owned: <span id="myPaintsOwnedCount" style="color:var(--accent);">0</span> / 38</div>
+        <div id="myPaintsList" style="overflow-y:auto; flex:1; display:grid; grid-template-columns:1fr 1fr; gap:6px;"></div>
     </div>
 </div>
 
@@ -1123,7 +1167,7 @@
         { key:'8x8',   label:'Wood Block (8×8)',               type:'Wood Block',            w:8,  h:8,  active:true  }, // P2  area 64
         { key:'4x8',   label:'Wood Block (4×8)',               type:'Wood Block',            w:4,  h:8,  active:true  }, // P3  area 32
         { key:'2x16',  label:'Wood Block (2×16)',              type:'Wood Block',            w:2,  h:16, active:true  }, // P4  area 32
-        { key:'4x6',   label:'Horror Table (4×6)',             type:'Horror Table',          w:4,  h:6,  active:true  }, // P5  area 24
+        { key:'4x6',   label:'Horror Table (4×6)',             type:'Horror Table',          w:4,  h:6,  active:true,  unique:true }, // P5  area 24
         { key:'4x4',   label:'Wood Block (4×4)',               type:'Wood Block',            w:4,  h:4,  active:true  }, // P6  area 16
         { key:'2x8',   label:'Wood Block (2×8)',               type:'Wood Block',            w:2,  h:8,  active:true  }, // P7  area 16
         { key:'1x16',  label:'Wood Block (1×16)',              type:'Wood Block',            w:1,  h:16, active:false, sideways:true }, // P8  area 16 — sideways, off by default
@@ -1165,7 +1209,10 @@
         }
 
         // canFit: checks if a block of size bw×bh fits at (sx,sy) with same color hex
-        function canFit(sx, sy, bw, bh, hex) {
+        // Horror Table (4x6) is maroon-only — hex #9D4141
+        const HORROR_TABLE_HEX = '#9D4141';
+        function canFit(sx, sy, bw, bh, hex, key) {
+            if (key === '4x6' && hex.toUpperCase() !== HORROR_TABLE_HEX.toUpperCase()) return false;
             if (sx + bw > w || sy + bh > h) return false;
             for (let dy = 0; dy < bh; dy++)
                 for (let dx = 0; dx < bw; dx++) {
@@ -1183,7 +1230,7 @@
             if (!c || used[sy*w+sx]) return null;
             const hex = c.hex;
             for (const [bw, bh, key] of activeBlocks) {
-                if (canFit(sx, sy, bw, bh, hex))
+                if (canFit(sx, sy, bw, bh, hex, key))
                     return { sx, sy, bw, bh, key, area: bw*bh };
             }
             return { sx, sy, bw:1, bh:1, key:'1x1', area:1 };
@@ -1262,7 +1309,7 @@
             if (used[i] || cellGen[i] !== best.gen) continue;
 
             // Double-check the block still fits (neighbors may have been used)
-            if (!canFit(best.sx, best.sy, best.bw, best.bh, colors[i].hex)) {
+            if (!canFit(best.sx, best.sy, best.bw, best.bh, colors[i].hex, best.key)) {
                 // Recompute best for this cell and re-add
                 const fit = bestFitAt(best.sx, best.sy);
                 if (fit) {
@@ -1786,12 +1833,12 @@
         zoomSlider.value = Math.max(10, Math.min(4000, Math.floor(scaleToFit * 100)));
         applyTransform();
     };
-    document.getElementById('download').onclick = () => {
+    function doDownload(big) {
         const { colors, w, h } = mappedPixels || {};
         if (!colors) return;
         const saveGrid = document.getElementById('gsSaveGrid') && document.getElementById('gsSaveGrid').checked;
-        // Use BLOCK size if saving grid, else 1px per pixel
-        const bs = saveGrid ? BLOCK : 1;
+        // Small = 1px per pixel; Big = BLOCK px per pixel (same as canvas render)
+        const bs = big ? BLOCK : 1;
         const dlCanvas = document.createElement('canvas');
         dlCanvas.width = w * bs; dlCanvas.height = h * bs;
         const dlCtx = dlCanvas.getContext('2d');
@@ -1821,11 +1868,13 @@
             }
         }
         const link = document.createElement('a');
-        link.download = `yeeps-colors.png`;
+        link.download = big ? 'yeeps-colors-big.png' : 'yeeps-colors.png';
         link.href = dlCanvas.toDataURL();
         link.click();
-        showToast('✅ PNG downloaded!');
-    };
+        showToast(big ? '✅ Big PNG downloaded!' : '✅ Small PNG downloaded!');
+    }
+    document.getElementById('downloadSmall').onclick = () => doDownload(false);
+    document.getElementById('downloadBig').onclick   = () => doDownload(true);
 
     // --- Export Active Image Palette with Name AND Count ---
     document.getElementById('downloadImagePalette').onclick = () => {
@@ -1925,7 +1974,7 @@
 
     // Build block toggle list with sideways section
     // Keys managed by the Unique Blocks UI (not shown in Blocks tab)
-    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3']);
+    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '4x6']);
 
     function invalidateAndRefresh() {
         blockGridFor = null; renderCanvas(); updateCounters();
@@ -2020,12 +2069,9 @@
     }
 
     function updateUniquePanelVisibility() {
-        const blockOptOn = document.getElementById('gsBlockOpt').checked;
-        const uniqueRow  = document.getElementById('gsUniqueRow');
-        const uniqueOn   = document.getElementById('gsUniqueBlocks').checked;
-        const panel      = document.getElementById('gsUniquePanel');
-        if (uniqueRow) uniqueRow.style.display = blockOptOn ? 'block' : 'none';
-        if (panel) panel.classList.toggle('visible', uniqueOn && blockOptOn);
+        const uniqueOn = document.getElementById('gsUniqueBlocks').checked;
+        const panel    = document.getElementById('gsUniquePanel');
+        if (panel) panel.classList.toggle('visible', uniqueOn);
     }
 
     function updateSidewaysVendingVisibility() {
@@ -2051,13 +2097,12 @@
     function checkAllUniquesOff() {
         const bp   = document.getElementById('uniq_16x16');
         const vm   = document.getElementById('uniq_3x2');
+        const ht   = document.getElementById('uniq_4x6');
         const gsUB = document.getElementById('gsUniqueBlocks');
-        if (bp && vm && gsUB) {
-            if (!bp.checked && !vm.checked) {
+        if (bp && vm && ht && gsUB) {
+            if (!bp.checked && !vm.checked && !ht.checked) {
                 gsUB.checked = false;
-                syncUniqueBlockDef('16x16', false);
-                syncUniqueBlockDef('3x2', false);
-                syncUniqueBlockDef('1x3', false);
+                ['16x16','3x2','1x3','4x6'].forEach(k => syncUniqueBlockDef(k, false));
                 updateUniquePanelVisibility();
             }
         }
@@ -2068,23 +2113,27 @@
         const on = document.getElementById('gsUniqueBlocks').checked;
         updateUniquePanelVisibility();
         if (!on) {
-            // Turn off all unique blocks
-            ['16x16','3x2','1x3'].forEach(k => syncUniqueBlockDef(k, false));
-            ['uniq_16x16','uniq_3x2','uniq_1x3'].forEach(id => {
+            ['16x16','3x2','1x3','4x6'].forEach(k => syncUniqueBlockDef(k, false));
+            ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_4x6'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.checked = false;
             });
         } else {
-            // Restore to whatever the checkboxes say
             syncUniqueBlockDef('16x16', document.getElementById('uniq_16x16').checked);
             syncUniqueBlockDef('3x2',   document.getElementById('uniq_3x2').checked);
             syncUniqueBlockDef('1x3',   document.getElementById('uniq_1x3').checked);
+            syncUniqueBlockDef('4x6',   document.getElementById('uniq_4x6').checked);
         }
         invalidateAndRefresh();
     });
 
     document.getElementById('uniq_16x16').addEventListener('change', () => {
         syncUniqueBlockDef('16x16', document.getElementById('uniq_16x16').checked);
+        checkAllUniquesOff();
+        invalidateAndRefresh();
+    });
+    document.getElementById('uniq_4x6').addEventListener('change', () => {
+        syncUniqueBlockDef('4x6', document.getElementById('uniq_4x6').checked);
         checkAllUniquesOff();
         invalidateAndRefresh();
     });
@@ -2102,6 +2151,53 @@
     });
 
     buildBlockToggles();
+
+    // Sub-buttons inside block opt row
+    document.getElementById('gsChooseBlocksBtn').onclick = () => {
+        const m = document.getElementById('chooseBlocksModal');
+        m.style.display = 'flex';
+    };
+    document.getElementById('chooseBlocksClose').onclick = () => {
+        document.getElementById('chooseBlocksModal').style.display = 'none';
+    };
+    document.getElementById('chooseBlocksModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('chooseBlocksModal'))
+            document.getElementById('chooseBlocksModal').style.display = 'none';
+    });
+
+    document.getElementById('gsUniqueBlocksBtn').onclick = () => {
+        document.getElementById('uniqueBlocksModal').style.display = 'flex';
+    };
+    document.getElementById('uniqueBlocksClose').onclick = () => {
+        document.getElementById('uniqueBlocksModal').style.display = 'none';
+    };
+    document.getElementById('uniqueBlocksDone').onclick = () => {
+        document.getElementById('uniqueBlocksModal').style.display = 'none';
+    };
+    document.getElementById('uniqueBlocksModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('uniqueBlocksModal'))
+            document.getElementById('uniqueBlocksModal').style.display = 'none';
+    });
+
+    // Max Optimization button — enables every block
+    document.getElementById('gsMaxOptBtn').onclick = () => {
+        YEEPS_BLOCK_DEFS.forEach(def => { def.active = true; });
+        // Sync all UI checkboxes in choose blocks
+        document.querySelectorAll('#gsBlockToggles input[type=checkbox]').forEach(cb => { cb.checked = true; });
+        document.querySelectorAll('#gsBlockToggles .gs-block-toggle-row').forEach(r => { r.classList.remove('off','dep-disabled'); });
+        // Sync unique blocks
+        ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_4x6'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.checked = true;
+        });
+        document.getElementById('gsUniqueBlocks').checked = true;
+        // Sync sideways
+        document.querySelectorAll('#gsBlockToggles input[type=checkbox]').forEach(cb => { cb.disabled = false; });
+        updateUniquePanelVisibility();
+        updateSidewaysVendingVisibility();
+        updateSidewaysDeps();
+        blockGridFor = null; renderCanvas(); updateCounters();
+        showToast('⚡ All blocks enabled!');
+    };
     updateUniquePanelVisibility();
     updateSidewaysVendingVisibility();
 
@@ -2140,6 +2236,8 @@
         updateGearIndicator();
         updateUniquePanelVisibility();
         updateSidewaysVendingVisibility();
+        const on = document.getElementById('gsBlockOpt').checked;
+        document.getElementById('gsBlockOptSub').style.display = on ? 'flex' : 'none';
     });
     updateGearIndicator();
     document.getElementById('gsDither').addEventListener('change', () => updateDisplay());
@@ -2217,6 +2315,40 @@
         return { w: 1, h: 1 };
     }
 
+    function blockLabel(w, h) {
+        const small = Math.min(w, h), large = Math.max(w, h);
+        const sideways = w > h; // wider than tall = horizontal/sideways orientation
+
+        // 16x16 Build Plate
+        if (w === 16 && h === 16) return '16×16 Build Plate';
+
+        // 3x2 or 2x3 Vending Machine
+        if ((w === 3 && h === 2) || (w === 2 && h === 3)) {
+            if (w === 3) return '3×2 Vending Machine';
+            return '2×3 Vending Machine';
+        }
+
+        // 1x3 Sideways Vending Machine (horizontal: 3 wide, 1 tall)
+        if ((w === 3 && h === 1) || (w === 1 && h === 3)) {
+            if (sideways || w === 3) return '1×3 Vending Machine (sideways)';
+            return '1×3 Vending Machine (sideways)';
+        }
+
+        // 1x16 sideways (horizontal 16-wide, 1-tall) — that's the sideways 2x16
+        if ((w === 16 && h === 1) || (w === 1 && h === 16)) {
+            return '1×16 Block (sideways 2×16 Block)';
+        }
+
+        // 4x6 Horror Table
+        if ((w === 4 && h === 6) || (w === 6 && h === 4)) {
+            if (w === 4) return '4×6 Horror Table';
+            return '6×4 Horror Table';
+        }
+
+        // Default: Wood Block, smaller×larger
+        return `${small}×${large} Block`;
+    }
+
     function highlightPaint(chosen, pixelX, pixelY) {
         palette.forEach((_, i) => {
             const card = document.getElementById(`card-${i}`);
@@ -2241,9 +2373,7 @@
         if (blockOpt && pixelX !== undefined && pixelY !== undefined) {
             const b = getBlockAt(pixelX, pixelY);
             if (b) {
-                const smaller = Math.min(b.w, b.h);
-                const larger  = Math.max(b.w, b.h);
-                blockEl.textContent = `Block: ${smaller}×${larger} Block`;
+                blockEl.textContent = `Block: ${blockLabel(b.w, b.h)}`;
                 blockEl.style.display = 'block';
             } else {
                 blockEl.style.display = 'none';
@@ -2828,6 +2958,90 @@
     buildFontGrid();
     applyTheme();
     applyFont(currentFont);
+    // Init gsBlockOptSub visibility
+    if (document.getElementById('gsBlockOpt').checked)
+        document.getElementById('gsBlockOptSub').style.display = 'flex';
+
+    // ── My Paint Collection ──────────────────────────────────────────────────
+    const myCollection = new Set();
+    function saveCollection() {
+        try { localStorage.setItem('yeeps_collection', JSON.stringify([...myCollection])); } catch(e) {}
+    }
+    function loadCollection() {
+        try {
+            const s = localStorage.getItem('yeeps_collection');
+            if (s) JSON.parse(s).forEach(h => myCollection.add(h));
+        } catch(e) {}
+    }
+    loadCollection();
+
+    function buildMyPaintsList() {
+        const list = document.getElementById('myPaintsList');
+        const countEl = document.getElementById('myPaintsOwnedCount');
+        if (!list) return;
+        list.innerHTML = '';
+        palette.forEach(color => {
+            const row = document.createElement('label');
+            row.style.cssText = 'display:flex; align-items:center; gap:7px; background:var(--card); border-radius:7px; padding:6px 8px; cursor:pointer; font-size:0.82rem; color:var(--text);';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = myCollection.has(color.hex);
+            cb.style.accentColor = 'var(--accent)';
+            cb.onchange = () => {
+                if (cb.checked) myCollection.add(color.hex);
+                else myCollection.delete(color.hex);
+                saveCollection();
+                updateMyPaintsCount();
+                // Also sync with ownedPaints for current image cost calc
+                syncCollectionToOwned();
+            };
+            const swatch = document.createElement('div');
+            swatch.style.cssText = `width:14px; height:14px; border-radius:3px; background:${color.hex}; flex-shrink:0; border:1px solid rgba(255,255,255,0.1);`;
+            const name = document.createElement('span');
+            name.textContent = color.name;
+            name.style.flex = '1';
+            row.appendChild(cb); row.appendChild(swatch); row.appendChild(name);
+            list.appendChild(row);
+        });
+        updateMyPaintsCount();
+    }
+
+    function updateMyPaintsCount() {
+        const el = document.getElementById('myPaintsOwnedCount');
+        if (el) el.textContent = myCollection.size;
+    }
+
+    function syncCollectionToOwned() {
+        // Sync my collection into ownedPaints for the current image's cost display
+        palette.forEach((color, i) => {
+            if (myCollection.has(color.hex)) ownedPaints.add(i);
+            // Don't remove — user may have manually checked some
+        });
+        updateButtcoinTotal();
+    }
+
+    document.getElementById('myPaintsBtn').onclick = () => {
+        buildMyPaintsList();
+        document.getElementById('myPaintsModal').style.display = 'flex';
+    };
+    document.getElementById('myPaintsClose').onclick = () => {
+        document.getElementById('myPaintsModal').style.display = 'none';
+    };
+    document.getElementById('myPaintsModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('myPaintsModal'))
+            document.getElementById('myPaintsModal').style.display = 'none';
+    });
+    document.getElementById('myPaintsAllOwned').onclick = () => {
+        palette.forEach(c => myCollection.add(c.hex));
+        saveCollection(); buildMyPaintsList(); syncCollectionToOwned();
+    };
+    document.getElementById('myPaintsNoneOwned').onclick = () => {
+        myCollection.clear();
+        saveCollection(); buildMyPaintsList(); syncCollectionToOwned();
+    };
+
+    // On load, sync collection into owned paints
+    syncCollectionToOwned();
     initMasterList();
 </script>
 
