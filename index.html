@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -583,12 +583,7 @@
         .step-dot.active { background: var(--accent); }
 
         /* Grid gear modal */
-        #gridSettingsModal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.8); z-index: 7000;
-            align-items: center; justify-content: center;
-        }
-        #gridSettingsModal.open { display: flex; }
+        #gridSettingsModal { z-index: 7000; }
         #gridSettingsBox {
             background: var(--bg2); border: 2px solid var(--border2); border-radius: 12px;
             padding: 20px; display: flex; flex-direction: column; gap: 12px;
@@ -759,6 +754,81 @@
         .ap-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
         #fontFileInput { display: none; }
         .ap-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+        /* ── Animation system ── */
+        /* When animations disabled, only skip transition animations not button feedback */
+        html[data-animations="off"] .modal-box,
+        html[data-animations="off"] #appearancePanel,
+        html[data-animations="off"] .gs-sub-modal-box {
+            animation: none !important;
+            transition: opacity 0.01s !important;
+        }
+
+        /* Backdrop fade */
+        @keyframes backdropFadeIn  { from { opacity:0; } to { opacity:1; } }
+        @keyframes backdropFadeOut { from { opacity:1; } to { opacity:0; } }
+
+        /* Modal box slide-up */
+        @keyframes modalSlideIn  { from { opacity:0; transform:translateY(18px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes modalSlideOut { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(18px) scale(0.97); } }
+
+        /* Appearance panel slide-down */
+        @keyframes panelSlideIn  { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes panelSlideOut { from { opacity:1; transform:translateY(0); } to { opacity:0; transform:translateY(-10px); } }
+
+        /* Shared modal backdrop */
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 7000;
+            align-items: center; justify-content: center;
+        }
+        .modal-backdrop.open { display: flex; animation: backdropFadeIn 0.18s ease; }
+        .modal-backdrop.closing { animation: backdropFadeOut 0.18s ease forwards; }
+
+        .modal-box {
+            animation: modalSlideIn 0.22s cubic-bezier(0.34,1.2,0.64,1);
+        }
+        .modal-backdrop.closing .modal-box {
+            animation: modalSlideOut 0.18s ease forwards;
+        }
+
+        /* Appearance panel */
+        #appearancePanel.open { display: flex; animation: panelSlideIn 0.18s ease; }
+        #appearancePanel.closing { animation: panelSlideOut 0.15s ease forwards; }
+
+        /* Sub-modals (chooseBlocks, uniqueBlocks) */
+        .gs-sub-modal-box {
+            animation: modalSlideIn 0.2s cubic-bezier(0.34,1.2,0.64,1);
+        }
+
+        /* Disable animations when toggled off */
+        html[data-animations="off"] .modal-backdrop.open,
+        html[data-animations="off"] .modal-backdrop.closing,
+        html[data-animations="off"] .modal-box,
+        html[data-animations="off"] .gs-sub-modal-box,
+        html[data-animations="off"] #appearancePanel.open,
+        html[data-animations="off"] #appearancePanel.closing {
+            animation: none !important;
+        }
+        html[data-animations="off"] * {
+            transition-duration: 0s !important;
+        }
+        /* But keep button active-press feedback even without animations */
+        html[data-animations="off"] button:active {
+            opacity: 0.7;
+            transform: scale(0.97);
+        }
+
+        /* Block opt sub-buttons slide-down */
+        #gsBlockOptSub {
+            overflow: hidden;
+        }
+        @keyframes subSlideIn  { from { opacity:0; max-height:0; } to { opacity:1; max-height:200px; } }
+        @keyframes subSlideOut { from { opacity:1; max-height:200px; } to { opacity:0; max-height:0; } }
+        #gsBlockOptSub.visible { animation: subSlideIn 0.22s ease forwards; }
+        #gsBlockOptSub.hiding  { animation: subSlideOut 0.18s ease forwards; }
+        html[data-animations="off"] #gsBlockOptSub.visible,
+        html[data-animations="off"] #gsBlockOptSub.hiding { animation: none !important; }
     </style>
 </head>
 <body>
@@ -787,6 +857,14 @@
     </div>
     <hr class="ap-divider">
     <div>
+        <div class="ap-section-title">Animations</div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text); cursor:pointer;">
+            <input type="checkbox" id="animToggle" checked style="accent-color:var(--accent);">
+            Enable animations
+        </label>
+    </div>
+    <hr class="ap-divider">
+    <div>
         <div class="ap-section-title">Font</div>
         <div class="ap-font-grid" id="fontGrid"></div>
         <label class="ap-upload-btn" style="margin-top:6px; display:block;">
@@ -801,7 +879,7 @@
 
 <div class="header-section">
     <h1><img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-right:10px; image-rendering:pixelated;">Yeeps Color Converter<img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-left:10px; image-rendering:pixelated;"></h1>
-    <p>This was a random helpful tool i decided to make using AI</p>
+    <p>This was a random helpful tool i decided to make with the help of Claude</p>
 </div>
 
 <div class="main-layout">
@@ -925,8 +1003,8 @@
     <div class="master-grid" id="masterGrid"></div>
 </div>
 
-<div id="cropModal">
-    <div id="cropBox">
+<div id="cropModal" class="modal-backdrop">
+    <div id="cropBox" class="modal-box">
         <h3>✂️ Crop Image</h3>
         <div class="hint-text">Drag to select the area to keep. Only crops — no scaling.</div>
         <div id="cropWrapper">
@@ -944,8 +1022,8 @@
     </div>
 </div>
 
-<div id="stepModal">
-    <div id="stepBox">
+<div id="stepModal" class="modal-backdrop">
+    <div id="stepBox" class="modal-box">
         <div id="stepHeader">
             <div id="stepColorName"><div class="step-swatch" id="stepSwatch"></div><span id="stepName">-</span></div>
             <span id="stepCounter">Step 1 / 1</span>
@@ -960,8 +1038,8 @@
     </div>
 </div>
 
-<div id="gridSettingsModal">
-    <div id="gridSettingsBox">
+<div id="gridSettingsModal" class="modal-backdrop">
+    <div id="gridSettingsBox" class="modal-box">
         <h3>⚙️ Grid Settings</h3>
 
         <!-- Tabs: General + Block Count only -->
@@ -1015,8 +1093,8 @@
         <button id="gridSettingsClose" style="background:var(--btn-sec); margin-top:4px;">Done</button>
 
         <!-- Choose Blocks sub-modal -->
-        <div id="chooseBlocksModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:8000; align-items:center; justify-content:center;">
-            <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); max-height:85vh; display:flex; flex-direction:column; gap:10px;">
+        <div id="chooseBlocksModal" class="modal-backdrop" style="z-index:8000;">
+            <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); max-height:85vh; display:flex; flex-direction:column; gap:10px;">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <h3 style="margin:0; font-size:1rem; color:var(--text);">🧱 Choose Blocks</h3>
                     <button id="chooseBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
@@ -1027,8 +1105,8 @@
         </div>
 
         <!-- Unique Blocks sub-modal -->
-        <div id="uniqueBlocksModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:8000; align-items:center; justify-content:center;">
-            <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(360px,90vw); display:flex; flex-direction:column; gap:10px;">
+        <div id="uniqueBlocksModal" class="modal-backdrop" style="z-index:8000;">
+            <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(360px,90vw); display:flex; flex-direction:column; gap:10px;">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <h3 style="margin:0; font-size:1rem; color:var(--text);">⭐ Unique Blocks</h3>
                     <button id="uniqueBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
@@ -1058,8 +1136,8 @@
     </div>
 </div>
 
-<div id="myPaintsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9000; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
-    <div style="background:var(--bg2); border:2px solid var(--border2); border-radius:14px; padding:20px; width:min(480px,96vw); max-height:88vh; display:flex; flex-direction:column; gap:12px; box-sizing:border-box;">
+<div id="myPaintsModal" class="modal-backdrop" style="z-index:9000; padding:16px; box-sizing:border-box;">
+    <div class="modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:14px; padding:20px; width:min(480px,96vw); max-height:88vh; display:flex; flex-direction:column; gap:12px; box-sizing:border-box;">
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
             <div>
                 <h3 style="margin:0; font-size:1.05rem; color:var(--text);">🎨 My Paint Collection</h3>
@@ -1980,6 +2058,55 @@
     };
 
     // Build block toggle list with sideways section
+
+    // ── Animation helpers ─────────────────────────────────────────────────────
+    function animsOn() {
+        return document.documentElement.getAttribute('data-animations') !== 'off';
+    }
+
+    function openModal(el) {
+        el.classList.remove('closing');
+        el.style.display = 'flex';
+        // Force reflow then add open
+        void el.offsetWidth;
+        el.classList.add('open');
+    }
+
+    function closeModal(el) {
+        if (!animsOn()) {
+            el.classList.remove('open');
+            el.style.display = 'none';
+            return;
+        }
+        el.classList.add('closing');
+        el.addEventListener('animationend', function handler() {
+            el.classList.remove('open', 'closing');
+            el.style.display = 'none';
+            el.removeEventListener('animationend', handler);
+        }, { once: true });
+    }
+
+    function openPanel(el) {
+        el.classList.remove('closing');
+        el.style.display = 'flex';
+        void el.offsetWidth;
+        el.classList.add('open');
+    }
+
+    function closePanel(el) {
+        if (!animsOn()) {
+            el.classList.remove('open');
+            el.style.display = 'none';
+            return;
+        }
+        el.classList.add('closing');
+        el.addEventListener('animationend', function handler() {
+            el.classList.remove('open', 'closing');
+            el.style.display = 'none';
+            el.removeEventListener('animationend', handler);
+        }, { once: true });
+    }
+
     // Keys managed by the Unique Blocks UI (not shown in Blocks tab)
     const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '4x6']);
 
@@ -2161,29 +2288,22 @@
 
     // Sub-buttons inside block opt row
     document.getElementById('gsChooseBlocksBtn').onclick = () => {
-        const m = document.getElementById('chooseBlocksModal');
-        m.style.display = 'flex';
+        openModal(document.getElementById('chooseBlocksModal'));
     };
-    document.getElementById('chooseBlocksClose').onclick = () => {
-        document.getElementById('chooseBlocksModal').style.display = 'none';
-    };
+    document.getElementById('chooseBlocksClose').onclick = () => closeModal(document.getElementById('chooseBlocksModal'));
     document.getElementById('chooseBlocksModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('chooseBlocksModal'))
-            document.getElementById('chooseBlocksModal').style.display = 'none';
+            closeModal(document.getElementById('chooseBlocksModal'));
     });
 
     document.getElementById('gsUniqueBlocksBtn').onclick = () => {
-        document.getElementById('uniqueBlocksModal').style.display = 'flex';
+        openModal(document.getElementById('uniqueBlocksModal'));
     };
-    document.getElementById('uniqueBlocksClose').onclick = () => {
-        document.getElementById('uniqueBlocksModal').style.display = 'none';
-    };
-    document.getElementById('uniqueBlocksDone').onclick = () => {
-        document.getElementById('uniqueBlocksModal').style.display = 'none';
-    };
+    document.getElementById('uniqueBlocksClose').onclick = () => closeModal(document.getElementById('uniqueBlocksModal'));
+    document.getElementById('uniqueBlocksDone').onclick = () => closeModal(document.getElementById('uniqueBlocksModal'));
     document.getElementById('uniqueBlocksModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('uniqueBlocksModal'))
-            document.getElementById('uniqueBlocksModal').style.display = 'none';
+            closeModal(document.getElementById('uniqueBlocksModal'));
     });
 
     // Max Optimization button — enables every block
@@ -2221,14 +2341,12 @@
 
     // Grid gear settings modal
     document.getElementById('gridGearBtn').onclick = () => {
-        document.getElementById('gridSettingsModal').classList.add('open');
+        openModal(document.getElementById('gridSettingsModal'));
     };
-    document.getElementById('gridSettingsClose').onclick = () => {
-        document.getElementById('gridSettingsModal').classList.remove('open');
-    };
+    document.getElementById('gridSettingsClose').onclick = () => closeModal(document.getElementById('gridSettingsModal'));
     document.getElementById('gridSettingsModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('gridSettingsModal'))
-            document.getElementById('gridSettingsModal').classList.remove('open');
+            closeModal(document.getElementById('gridSettingsModal'));
     });
     function updateGearIndicator() {
         const on = document.getElementById('gsBlockOpt').checked;
@@ -2244,7 +2362,16 @@
         updateUniquePanelVisibility();
         updateSidewaysVendingVisibility();
         const on = document.getElementById('gsBlockOpt').checked;
-        document.getElementById('gsBlockOptSub').style.display = on ? 'flex' : 'none';
+        const sub = document.getElementById('gsBlockOptSub');
+        if (on) {
+            sub.style.display = 'flex';
+            sub.classList.remove('hiding'); sub.classList.add('visible');
+        } else {
+            sub.classList.remove('visible'); sub.classList.add('hiding');
+            if (animsOn()) {
+                sub.addEventListener('animationend', () => { sub.style.display = 'none'; sub.classList.remove('hiding'); }, { once: true });
+            } else { sub.style.display = 'none'; sub.classList.remove('hiding'); }
+        }
     });
     updateGearIndicator();
     document.getElementById('gsDither').addEventListener('change', () => updateDisplay());
@@ -2578,7 +2705,7 @@
             // default: full image selected
             cropRect = { x: 0, y: 0, w: cropImgEl.offsetWidth, h: cropImgEl.offsetHeight };
             drawCropUI();
-            cropModal.classList.add('open');
+            openModal(cropModal);
         };
         if (cropImgEl.complete) cropImgEl.onload();
     };
@@ -2630,7 +2757,7 @@
     window.addEventListener('touchend', () => { cropDragging = false; });
 
     document.getElementById('cropApply').onclick = () => {
-        if (!cropRect || cropRect.w < 2 || cropRect.h < 2) { cropModal.classList.remove('open'); return; }
+        if (!cropRect || cropRect.w < 2 || cropRect.h < 2) { closeModal(cropModal); return; }
         // Scale crop coords from display size to original image size
         const scaleX = img.naturalWidth / cropImgEl.offsetWidth;
         const scaleY = img.naturalHeight / cropImgEl.offsetHeight;
@@ -2647,12 +2774,12 @@
             panX = 0; panY = 0;
             resSlider.value = Math.min(256, Math.max(sw, sh));
             updateDisplay();
-            cropModal.classList.remove('open');
+            closeModal(cropModal);
         };
         croppedImg.src = cc.toDataURL();
     };
 
-    document.getElementById('cropCancel').onclick = () => cropModal.classList.remove('open');
+    document.getElementById('cropCancel').onclick = () => closeModal(cropModal);
 
 
     // ── Step-by-Step Guide ───────────────────────────────────────────────────
@@ -2757,9 +2884,9 @@
 
     document.getElementById('stepGuideBtn').onclick = () => {
         buildStepGuide();
-        stepModal.classList.add('open');
+        openModal(stepModal);
     };
-    document.getElementById('stepCloseBtn').onclick = () => stepModal.classList.remove('open');
+    document.getElementById('stepCloseBtn').onclick = () => closeModal(stepModal);
     document.getElementById('stepPrev').onclick = () => goToStep(stepIndex - 1);
     document.getElementById('stepNext').onclick = () => goToStep(stepIndex + 1);
 
@@ -2784,7 +2911,7 @@
 
     // Close on backdrop click
     stepModal.addEventListener('click', (e) => {
-        if (e.target === stepModal) stepModal.classList.remove('open');
+        if (e.target === stepModal) closeModal(stepModal);
     });
 
 
@@ -2893,13 +3020,15 @@
     // Appearance button toggle
     document.getElementById('appearanceBtn').onclick = (e) => {
         e.stopPropagation();
-        document.getElementById('appearancePanel').classList.toggle('open');
+        const ap = document.getElementById('appearancePanel');
+        if (ap.classList.contains('open')) { closePanel(ap); }
+        else { openPanel(ap); }
     };
     document.addEventListener('click', (e) => {
         const panel = document.getElementById('appearancePanel');
         const btn = document.getElementById('appearanceBtn');
         if (!panel.contains(e.target) && e.target !== btn) {
-            panel.classList.remove('open');
+            closePanel(panel);
         }
     });
 
@@ -2949,6 +3078,18 @@
     buildFontGrid();
     applyTheme();
     applyFont(currentFont);
+    // Animations toggle
+    const savedAnim = localStorage.getItem('yeeps_animations');
+    const animOff = savedAnim === 'off';
+    document.documentElement.setAttribute('data-animations', animOff ? 'off' : 'on');
+    const animToggleEl = document.getElementById('animToggle');
+    if (animToggleEl) animToggleEl.checked = !animOff;
+    animToggleEl && animToggleEl.addEventListener('change', () => {
+        const off = !animToggleEl.checked;
+        document.documentElement.setAttribute('data-animations', off ? 'off' : 'on');
+        try { localStorage.setItem('yeeps_animations', off ? 'off' : 'on'); } catch(e) {}
+    });
+
     // Init gsBlockOptSub visibility
     if (document.getElementById('gsBlockOpt').checked)
         document.getElementById('gsBlockOptSub').style.display = 'flex';
@@ -3013,14 +3154,14 @@
 
     document.getElementById('myPaintsBtn').onclick = () => {
         buildMyPaintsList();
-        document.getElementById('myPaintsModal').style.display = 'flex';
+        openModal(document.getElementById('myPaintsModal'));
     };
     document.getElementById('myPaintsClose').onclick = () => {
-        document.getElementById('myPaintsModal').style.display = 'none';
+        closeModal(document.getElementById('myPaintsModal'));
     };
     document.getElementById('myPaintsModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('myPaintsModal'))
-            document.getElementById('myPaintsModal').style.display = 'none';
+            closeModal(document.getElementById('myPaintsModal'));
     });
     document.getElementById('myPaintsAllOwned').onclick = () => {
         palette.forEach(c => myCollection.add(c.hex));
