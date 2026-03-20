@@ -360,94 +360,84 @@
         /* ══════════════════════════════════════
            MOBILE / TABLET RESPONSIVE LAYOUT
            ══════════════════════════════════════ */
+        /* ════════════════════════════════════════════════════
+           MOBILE LAYOUT — complete redesign for phone screens
+           ════════════════════════════════════════════════════ */
         @media (max-width: 900px) {
-            /* Reset desktop slide animations on mobile */
+            html, body { overflow: hidden !important; height: 100% !important; }
+            #appShell { height: 100vh !important; overflow: hidden !important; flex-direction: column !important; }
+            #dropOverlay { display: none !important; }
+            .master-item .hex-tip { display: none !important; }
+            #appearanceBtn { top: 8px; right: 8px; padding: 5px 8px; font-size: 1rem; }
+            #appearancePanel { top: 48px; right: 8px; width: min(280px, 90vw); max-height: 80vh; overflow-y: auto; }
+            body.image-loaded .header-section { transform: none !important; }
             .header-section {
-                padding: 18px 16px 8px 16px;
-                transition: none;
+                padding: 6px 12px !important; flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center; transition: none !important;
             }
-            body.image-loaded .header-section {
-                transform: none;
-            }
-            .header-section h1 { font-size: 1.8rem; }
-            .header-section p  { font-size: 0.9rem; }
-
-            /* Stack layout vertically on mobile */
-            html, body { overflow: auto !important; }
-            #appShell { height: auto !important; overflow: visible !important; }
+            .header-section h1 { font-size: 1.1rem !important; white-space: nowrap; }
+            .header-section h1 img { width: 24px !important; height: 24px !important; margin: 0 5px !important; }
+            .header-section p { display: none; }
             .main-layout {
-                flex-direction: column !important;
-                height: auto !important;
-                overflow: visible !important;
-                border-bottom: none;
+                flex-direction: column !important; height: calc(100vh - 42px) !important;
+                overflow: hidden !important; border-bottom: none !important;
             }
             #frameSection {
-                order: 1; width: 100%; height: 80vw; max-height: 70vh;
-                padding: 10px; box-sizing: border-box;
+                order: 1 !important; width: 100% !important;
+                height: 52vw !important; min-height: 180px !important; max-height: 48vh !important;
+                padding: 6px !important; box-sizing: border-box !important; flex-shrink: 0 !important;
             }
-            /* Viewer takes full width, comes after frame on mobile */
-            .viewer-section {
-                order: 2;
-                width: 100% !important; flex-shrink: 0;
-                border-right: none !important;
-                border-top: 2px solid var(--border);
-                padding: 12px; overflow-y: visible;
-                transition: none;
-            }
-            .viewer-inner { max-width: 100% !important; }
-            .controls { margin-bottom: 12px; }
             .viewport-frame {
                 width: 100% !important; height: 100% !important;
-                aspect-ratio: unset !important; opacity: 1 !important;
+                aspect-ratio: unset !important; opacity: 1 !important; border-radius: 6px !important;
             }
-            /* Palette — full width below on mobile */
-            .palette-section {
-                order: 3;
-                width: 100% !important; flex-shrink: 0;
-                border-left: none !important;
-                border-top: 2px solid var(--border);
-                max-height: 0 !important; overflow: hidden !important;
-                padding: 0 !important; opacity: 0;
-                transition: max-height 0.5s ease, opacity 0.4s ease 0.1s, padding 0.4s ease;
+            .viewer-section { display: none !important; }
+            .palette-section { display: none !important; }
+            #mobileSheet {
+                order: 2 !important; flex: 1 !important; display: flex !important;
+                flex-direction: column !important; background: var(--bg2) !important;
+                border-top: 2px solid var(--border) !important; overflow: hidden !important; min-height: 0 !important;
             }
-            body.image-loaded .palette-section {
-                max-height: none !important; height: auto !important;
-                padding: 16px !important; opacity: 1 !important;
-                overflow: visible !important;
+            #mobileStatsBar {
+                display: flex !important; gap: 6px !important; padding: 5px 10px !important;
+                background: var(--bg) !important; border-bottom: 1px solid var(--border) !important;
+                overflow-x: auto !important; flex-shrink: 0 !important; scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
             }
-
-            /* Dynamic controls always visible on mobile */
-            #dynamicControls {
-                opacity: 1 !important;
-                pointer-events: all !important;
-                transition: none;
+            #mobileStatsBar::-webkit-scrollbar { display: none; }
+            .mob-stat {
+                flex-shrink: 0; background: var(--card); border-radius: 6px;
+                padding: 3px 9px; font-size: 0.7rem; white-space: nowrap;
             }
-
-            /* Bigger tap targets */
-            button { padding: 12px; font-size: 0.95rem; }
+            .mob-stat .ms-label { color: var(--text3); font-size: 0.6rem; display: block; }
+            .mob-stat .ms-value { color: var(--accent); font-weight: bold; }
+            #mobileTabBar {
+                display: flex !important; flex-shrink: 0 !important;
+                background: var(--bg) !important; border-bottom: 1px solid var(--border) !important;
+            }
+            .mob-tab {
+                flex: 1 !important; padding: 9px 4px !important; font-size: 0.68rem !important;
+                font-family: inherit !important; background: none !important; border: none !important;
+                border-bottom: 2px solid transparent !important; color: var(--text2) !important;
+                cursor: pointer !important; border-radius: 0 !important; white-space: nowrap;
+                transform: none !important; box-shadow: none !important;
+                transition: color 0.15s, border-color 0.15s !important;
+            }
+            .mob-tab.active { color: var(--accent) !important; border-bottom-color: var(--accent) !important; }
+            .mob-tab:hover { transform: none !important; box-shadow: none !important; background: none !important; }
+            #mobileTabContent { flex: 1 !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; min-height: 0 !important; }
+            .mob-panel { display: none; padding: 12px; }
+            .mob-panel.active { display: block; }
+            #dynamicControls { opacity: 1 !important; pointer-events: all !important; transform: none !important; transition: none !important; }
+            #leftPaintsSection { opacity: 1 !important; transform: none !important; transition: none !important; }
+            body.image-loaded #uploadArea { max-height: 30px; opacity: 0.6; }
+            body.image-loaded #removeBgLabel { display: none; }
+            #mobMasterGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 4px; }
+            .mob-panel .master-item { padding: 4px 6px !important; font-size: 0.75rem !important; }
+            .mob-panel button { padding: 10px; font-size: 0.85rem; }
             .btn-group { grid-template-columns: 1fr 1fr; }
-
-            /* Master section compact */
-            .master-section { padding: 20px 14px; }
-            .master-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-
-            /* Hide hex tooltip on touch (no hover) */
-            .master-item .hex-tip { display: none !important; }
-
-            /* Touch-friendly search bar */
+            .control-row { grid-template-columns: 1fr 1fr; }
             #searchBar { font-size: 1rem; padding: 8px; }
-
-            /* Prevent drop overlay on mobile */
-            #dropOverlay { display: none !important; }
-        }
-
-        @media (max-width: 480px) {
-            .header-section h1 { font-size: 1.4rem; }
-            .header-section h1 img { width: 32px !important; height: 32px !important; }
-            .viewport-frame { width: 100% !important; aspect-ratio: 1 / 1 !important; height: auto !important; }
-            .master-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-            .btn-group { grid-template-columns: 1fr; }
-            #download { grid-column: span 1 !important; }
         }
 
         /* Hue offset hint text */
@@ -1048,13 +1038,142 @@
         .viewport-frame { animation: checkerDrift 30s linear infinite; }
         @keyframes checkerDrift { 0%{background-position:0 0;} 100%{background-position:32px 32px;} }
         html[data-animations="off"] * { animation: none !important; }
+
+        /* ── Music now-playing widget ── */
+        #nowPlayingWidget {
+            position: fixed; bottom: 12px; left: 12px;
+            display: flex; align-items: center; gap: 0;
+            z-index: 9998; pointer-events: none;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        /* active = music is playing OR paused (just gif changes) */
+        #nowPlayingWidget.active {
+            opacity: 1;
+            pointer-events: all; /* allow hover */
+            cursor: default;
+        }
+
+        #nowPlayingGif {
+            width: 56px; height: 56px;
+            border-radius: 10px 0 0 10px;
+            object-fit: cover;
+            image-rendering: pixelated;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        #nowPlayingLabel {
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            max-width: 0; overflow: hidden;
+            white-space: nowrap;
+            padding: 0;
+            transition: max-width 0.45s cubic-bezier(0.4,0,0.2,1),
+                        padding 0.45s cubic-bezier(0.4,0,0.2,1),
+                        opacity 0.3s ease;
+            opacity: 0;
+            display: flex; flex-direction: column; gap: 1px;
+        }
+        /* Slide out on hover only */
+        #nowPlayingWidget.active:hover #nowPlayingLabel {
+            max-width: 200px;
+            padding: 8px 14px 8px 10px;
+            opacity: 1;
+        }
+        #nowPlayingTrack {
+            font-size: 0.78rem; font-weight: bold;
+            color: #fff;
+            font-family: var(--font, 'Lilita One', cursive);
+        }
+        #nowPlayingArtist {
+            font-size: 0.65rem; color: rgba(255,255,255,0.55);
+            font-family: var(--font, 'Lilita One', cursive);
+        }
+
+        /* Image theme dot */
+        .tdot-image-wrap {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            cursor: pointer;
+        }
+        .tdot-image-label {
+            font-size: 0.5rem; color: var(--text2); letter-spacing: 0.5px;
+            font-family: var(--font, 'Lilita One', cursive);
+            line-height: 1; white-space: nowrap;
+        }
+        canvas#imageThemeDot {
+            width: 22px; height: 22px; border: 2px solid transparent;
+            transition: border-color 0.15s, transform 0.18s;
+            display: block;
+        }
+        canvas#imageThemeDot.active { border-color: var(--text) !important; transform: scale(1.15); }
+        canvas#imageThemeDot:hover  { transform: scale(1.35); }
+
+        /* Custom music track row */
+        .cm-track {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--card); border-radius: 7px; padding: 5px 8px;
+            font-size: 0.75rem;
+        }
+        .cm-track-info { flex: 1; min-width: 0; }
+        .cm-track-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cm-track-artist { color: var(--text3); font-size: 0.65rem; }
+        .cm-play-btn {
+            background: var(--btn-sec); border: none; border-radius: 5px;
+            color: var(--text); cursor: pointer; padding: 3px 7px; font-size: 0.7rem;
+            font-family: inherit; transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .cm-play-btn.playing { background: var(--accent); color: #fff; }
+        .cm-play-btn:hover { background: var(--accent); color: #fff; }
+        .cm-del-btn {
+            background: none; border: none; color: var(--text3); cursor: pointer;
+            font-size: 0.7rem; padding: 2px 4px; flex-shrink: 0;
+            transition: color 0.15s;
+        }
+        .cm-del-btn:hover { color: #e05555; }
+
+        @media (max-width: 900px) {
+            #maxwellImg { display: none !important; }
+            #nowPlayingWidget { bottom: auto; top: auto; }
+        }
+
+        /* Mobile inspect popup */
+        #mobInspectPopup {
+            bottom: auto;
+        }
+        @media (max-width: 900px) {
+            #modeToggleMob.active-inspect {
+                background: var(--accent) !important;
+                box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent) !important;
+                color: #fff !important;
+            }
+        }
     </style>
 </head>
 <body>
 
 <button id="appearanceBtn" title="Appearance settings">🖌️</button>
+<img id="maxwellImg" src="https://res.cloudinary.com/dqu51shdl/image/upload/v1773970619/maxwell-spinning_iydt5v.gif" alt="maxwell" style="position:fixed; top:0; left:0; width:120px; z-index:9999; pointer-events:none; image-rendering:pixelated;">
+<div id="nowPlayingWidget">
+    <img id="nowPlayingGif"
+        src="https://res.cloudinary.com/dqu51shdl/image/upload/v1773974888/giphy_iprhxa.gif"
+        alt="now playing">
+    <div id="nowPlayingLabel">
+        <span id="nowPlayingTrack">Grace FM</span>
+        <span id="nowPlayingArtist">Landfill</span>
+    </div>
+</div>
 
 <div id="appearancePanel">
+    <!-- SAVE PREFS at top -->
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <button id="savePrefsBtn" style="flex:1; padding:7px 10px; border-radius:7px; font-size:0.8rem; font-family:inherit; cursor:pointer; border:1.5px solid var(--border2); background:var(--accent); color:#fff; transition:0.15s;">💾 Saving On</button>
+        <button id="clearPrefsBtn" style="flex:1; padding:7px 10px; border-radius:7px; font-size:0.8rem; font-family:inherit; cursor:pointer; border:1.5px solid var(--border2); background:var(--btn-sec); color:var(--text2); transition:0.15s;">🗑 Reset All</button>
+    </div>
+    <hr class="ap-divider">
     <div>
         <div class="ap-section-title">Theme</div>
         <div class="ap-dots">
@@ -1064,6 +1183,10 @@
             <button class="tdot" data-theme="dark-desert"  title="Desert"          style="--c:#c8982a"></button>
             <button class="tdot" data-theme="dark-forest"  title="Forest"          style="--c:#5aad54"></button>
             <button class="tdot" data-theme="dark-rose"    title="Rose"            style="--c:#d4607a"></button>
+            <div class="tdot-image-wrap" title="Image Palette Theme">
+                <canvas id="imageThemeDot" width="22" height="22" class="tdot" data-theme="image" style="cursor:pointer; border-radius:50%; filter:blur(1.5px);"></canvas>
+                <span class="tdot-image-label">IMAGE</span>
+            </div>
         </div>
     </div>
     <hr class="ap-divider">
@@ -1085,6 +1208,16 @@
             </div>
         </div>
     </div>
+    <div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+            <div class="ap-section-title" style="margin:0;">Custom Music</div>
+            <label style="font-size:0.72rem; color:var(--accent); cursor:pointer; padding:2px 6px; border:1px solid var(--accent); border-radius:4px; display:inline-flex; align-items:center;">+ Add MP3
+                <input type="file" id="musicFileInput" accept=".mp3" style="display:none;" multiple>
+            </label>
+        </div>
+        <div style="font-size:0.65rem; color:var(--text3); margin-bottom:4px;">⚠️ Custom songs are session-only and won't be saved.</div>
+        <div id="customMusicList" style="display:flex; flex-direction:column; gap:5px; max-height:150px; overflow-y:auto;"></div>
+    </div>
     <hr class="ap-divider">
     <div>
         <div class="ap-section-title">Animations</div>
@@ -1096,7 +1229,7 @@
     <hr class="ap-divider">
     <div>
         <div class="ap-section-title">Font</div>
-        <div class="ap-font-grid" id="fontGrid"></div>
+        <div class="ap-font-grid" id="fontGrid" style="max-height:140px; overflow-y:auto;"></div>
         <label class="ap-upload-btn" style="margin-top:6px; display:block;">
             📁 Upload font (.ttf / .otf)
             <input type="file" id="fontFileInput" accept=".ttf,.otf">
@@ -1122,9 +1255,21 @@
                     <div id="dropZoneText">Drag &amp; drop or click to upload</div>
                     <div id="dropZoneSub">PNG, JPG, WEBP, GIF and more</div>
                 </label>
-                <label id="removeBgLabel">
-                    <input type="checkbox" id="removeBgToggle" style="accent-color:var(--accent);"> Remove background before converting
-                </label>
+                <div id="removeBgArea">
+                    <label id="removeBgLabel" style="display:flex;align-items:center;gap:6px;font-size:0.76rem;color:var(--text2);cursor:pointer;">
+                        <input type="checkbox" id="removeBgToggle" style="accent-color:var(--accent);"> Remove background
+                    </label>
+                    <div id="removeBgCleanup" style="display:none; margin-top:5px; padding:4px 2px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;color:var(--text3);margin-bottom:2px;">
+                            <span>Edge cleanup</span>
+                            <span id="cleanupVal">50%</span>
+                        </div>
+                        <input type="range" id="bgCleanupSlider" min="0" max="100" value="50" style="width:100%;accent-color:var(--accent);">
+                        <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text3);margin-top:1px;">
+                            <span>Soft</span><span>Hard</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="dynamicControls">
@@ -1244,7 +1389,10 @@
                 <span class="cp-value" id="totalPaintsCount">—</span>
             </div>
         </div>
-        <!-- owned toggle buttons removed, managed via My Paint Collection -->
+        <div style="display:flex; gap:8px; margin-bottom:8px; flex-shrink:0;">
+            <button id="toggleAllOwned" style="flex:1; font-size:0.78rem; padding:7px;">All Owned</button>
+            <button id="toggleAllUnowned" class="secondary" style="flex:1; font-size:0.78rem; padding:7px;">All Unowned</button>
+        </div>
         <input type="text" id="searchBar" placeholder="Search paints..." style="margin-bottom: 8px; flex-shrink: 0;">
         <div id="paletteStats"></div>
         </div><!-- end sidePaintsPanel -->
@@ -1256,6 +1404,108 @@
     </div>
 </div>
 <!-- master removed -->
+
+<!-- ══════════════════════════════════════════════
+     MOBILE BOTTOM SHEET — only visible on phones
+     ══════════════════════════════════════════════ -->
+<div id="mobileSheet" style="display:none;">
+    <!-- Scrollable stats bar -->
+    <div id="mobileStatsBar">
+        <div class="mob-stat"><span class="ms-label">Blocks</span><span class="ms-value" id="mobBlocksVal">—</span></div>
+        <div class="mob-stat"><span class="ms-label">Paints</span><span class="ms-value" id="mobPaintsVal">—</span></div>
+        <div class="mob-stat"><span class="ms-label">Cost</span><span class="ms-value" id="mobCostVal">—</span></div>
+    </div>
+    <!-- Tab bar -->
+    <div id="mobileTabBar">
+        <button class="mob-tab active" data-mobtab="controls">⚙ Controls</button>
+        <button class="mob-tab" data-mobtab="paints">🎨 Paints</button>
+        <button class="mob-tab" data-mobtab="blocks">🧱 Blocks</button>
+        <button class="mob-tab" data-mobtab="all">All Paints</button>
+    </div>
+    <!-- Tab content -->
+    <div id="mobileTabContent">
+
+        <!-- CONTROLS TAB -->
+        <div class="mob-panel active" data-mobpanel="controls">
+            <div id="mobUploadArea" style="margin-bottom:10px;">
+                <label style="display:block; padding:14px; border:2px dashed color-mix(in srgb,var(--accent) 50%,var(--border2)); border-radius:8px; text-align:center; cursor:pointer; background:color-mix(in srgb,var(--accent) 5%,var(--bg2)); font-size:0.85rem; color:var(--text2);" for="upload">
+                    Tap to upload image
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text2);margin-top:6px;cursor:pointer;">
+                    <input type="checkbox" id="removeBgToggleMob" style="accent-color:var(--accent);"> Remove background
+                </label>
+            </div>
+            <div class="control-row" style="margin-bottom:8px;">
+                <div class="input-group">
+                    <div style="font-size:0.75rem;">Scale: <input type="text" id="resTextMob" class="num-input" value="256" style="width:40px;"> px</div>
+                    <input type="range" id="resSliderMob" min="1" max="256" value="256">
+                </div>
+                <div class="input-group">
+                    <div style="font-size:0.75rem;">Zoom: <input type="text" id="zoomTextMob" class="num-input" value="100" style="width:40px;"> %</div>
+                    <input type="range" id="zoomSliderMob" min="10" max="4000" value="100">
+                </div>
+            </div>
+            <div class="input-group" style="margin-bottom:8px;">
+                <div style="font-size:0.75rem;">Hue: <input type="text" id="hueTextMob" class="num-input" value="0" style="width:40px;"> °</div>
+                <input type="range" id="hueSliderMob" min="-180" max="180" value="0">
+            </div>
+            <div class="btn-group" style="margin-bottom:8px;">
+                <button id="fitViewMob" class="secondary">Fit to View</button>
+                <button id="resetZoomMob" class="secondary">Reset Zoom</button>
+                <button id="toggleGridMob" class="secondary">Grid: OFF</button>
+                <button id="gridGearMob" class="secondary">⚙️ Grid Settings</button>
+                <button id="modeToggleMob" class="secondary" style="grid-column:span 2; font-size:0.82rem;">🔍 Inspect: OFF</button>
+            </div>
+            <div class="btn-group" style="margin-bottom:8px;">
+                <button id="downloadSmallMob" class="secondary">⬇ Small</button>
+                <button id="downloadBigMob">⬇ Big</button>
+            </div>
+            <div class="btn-group">
+                <button id="cropBtnMob" class="secondary">✂️ Crop</button>
+                <button id="stepGuideMob" class="secondary">📋 Guide</button>
+            </div>
+        </div>
+
+        <!-- PAINTS USED TAB -->
+        <div class="mob-panel" data-mobpanel="paints">
+            <div id="mobButtcoin" style="background:var(--coin-bg);border:2px solid var(--coin-bdr);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:0.9rem;color:var(--coin-txt);font-weight:bold;"></div>
+            <div style="margin-bottom:8px;">
+                <button id="mobMyPaintsBtn" style="width:100%;font-size:0.82rem;padding:8px;">🎨 My Paint Collection</button>
+            </div>
+            <input type="text" id="searchBarMob" placeholder="Search paints..." style="width:100%;box-sizing:border-box;margin-bottom:8px;padding:8px;border-radius:6px;border:1px solid var(--border2);background:var(--input-bg);color:var(--text);font-family:inherit;font-size:0.85rem;">
+            <div id="mobPaletteStats"></div>
+        </div>
+
+        <!-- BLOCKS USED TAB -->
+        <div class="mob-panel" data-mobpanel="blocks">
+            <div class="gs-desc" style="margin-bottom:8px;">Requires Block Optimization to be on.</div>
+            <div id="mobBlockList" style="display:flex;flex-direction:column;gap:5px;"></div>
+        </div>
+
+        <!-- ALL PAINTS TAB -->
+        <div class="mob-panel" data-mobpanel="all">
+            <div style="font-size:0.72rem;color:var(--text2);margin-bottom:6px;">Toggle off paints you don't want used</div>
+            <input type="text" id="masterSearchMob" placeholder="Search all paints..." style="width:100%;box-sizing:border-box;margin-bottom:8px;padding:8px;border-radius:6px;border:1px solid var(--border2);background:var(--input-bg);color:var(--text);font-family:inherit;font-size:0.85rem;">
+            <div id="mobMasterGrid"></div>
+        </div>
+
+    </div>
+</div>
+
+<div id="mobInspectPopup" style="
+    display:none; position:fixed; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.88); backdrop-filter:blur(8px);
+    border:1.5px solid var(--border2); border-radius:12px;
+    padding:10px 16px; z-index:9990; min-width:220px; max-width:88vw;
+    box-shadow:0 4px 24px rgba(0,0,0,0.5);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events:none;
+">
+    <div id="mobInspectSwatch" style="width:18px;height:18px;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:8px;border:1px solid rgba(255,255,255,0.2);"></div>
+    <span id="mobInspectPaint" style="font-size:0.9rem;color:#fff;font-family:inherit;font-weight:bold;vertical-align:middle;">—</span>
+    <div id="mobInspectBlock" style="font-size:0.72rem;color:#aaa;margin-top:3px;"></div>
+    <div id="mobInspectPos" style="font-size:0.65rem;color:#666;margin-top:1px;"></div>
+</div>
 </div><!-- end appShell -->
 <div id="cropModal" class="modal-backdrop">
     <div id="cropBox" class="modal-box">
@@ -1916,22 +2166,116 @@
 
         const imageData = srcCtx.getImageData(0, 0, fw, fh);
 
-        // Background removal — if toggled, make near-white and near-bg pixels transparent
+        // Background removal — smart edge flood-fill + feathered edges
         if (document.getElementById('removeBgToggle') && document.getElementById('removeBgToggle').checked) {
             const bgData = imageData.data;
-            // Sample corner pixels to determine background color
-            function getBgSample() {
-                const corners = [[0,0],[fw-1,0],[0,fh-1],[fw-1,fh-1]];
-                let r=0,g=0,b=0;
-                corners.forEach(([x,y])=>{ const i=(y*fw+x)*4; r+=bgData[i];g+=bgData[i+1];b+=bgData[i+2]; });
-                return [r/4,g/4,b/4];
+            const W = fw, H = fh;
+
+            // Helper: color distance between pixel at index i and a reference color
+            function colorDist(i, r2, g2, b2) {
+                const dr=bgData[i]-r2, dg=bgData[i+1]-g2, db=bgData[i+2]-b2;
+                return Math.sqrt(dr*dr+dg*dg+db*db);
             }
-            const [bgR,bgG,bgB] = getBgSample();
-            const threshold = 40;
-            for (let pi=0; pi<bgData.length; pi+=4) {
-                if (bgData[pi+3] < 32) continue;
-                const dr=bgData[pi]-bgR, dg=bgData[pi+1]-bgG, db=bgData[pi+2]-bgB;
-                if (Math.sqrt(dr*dr+dg*dg+db*db) < threshold) bgData[pi+3] = 0;
+
+            // Step 1: collect bg color samples from ALL 4 edges (not just corners)
+            // Sample every 4th pixel along each edge for a robust bg color estimate
+            const bgSamples = [];
+            for (let x=0; x<W; x+=4) {
+                bgSamples.push([bgData[(0*W+x)*4],bgData[(0*W+x)*4+1],bgData[(0*W+x)*4+2]]);
+                bgSamples.push([bgData[((H-1)*W+x)*4],bgData[((H-1)*W+x)*4+1],bgData[((H-1)*W+x)*4+2]]);
+            }
+            for (let y=0; y<H; y+=4) {
+                bgSamples.push([bgData[(y*W+0)*4],bgData[(y*W+0)*4+1],bgData[(y*W+0)*4+2]]);
+                bgSamples.push([bgData[(y*W+(W-1))*4],bgData[(y*W+(W-1))*4+1],bgData[(y*W+(W-1))*4+2]]);
+            }
+            // Cluster the edge samples — find the most common "color group"
+            // Simple approach: find the median RGB
+            bgSamples.sort((a,b)=> (a[0]+a[1]+a[2]) - (b[0]+b[1]+b[2]));
+            const mid = bgSamples[Math.floor(bgSamples.length/2)];
+            const [bgR,bgG,bgB] = mid;
+
+            // Step 2: adaptive threshold — analyze how spread the edge colors are
+            // If background is uniform, use tighter threshold; if varied, use wider
+            let spread = 0;
+            bgSamples.forEach(([r,g,b])=>{
+                const d=Math.sqrt((r-bgR)**2+(g-bgG)**2+(b-bgB)**2);
+                spread = Math.max(spread, d);
+            });
+            const threshold = Math.min(Math.max(spread * 0.8, 30), 80);
+
+            // Step 3: flood-fill from all 4 edges
+            // Only remove pixels connected to the edge that match background color
+            const removed = new Uint8Array(W * H); // 1 = marked for removal
+            const queue = [];
+
+            function tryEnqueue(x, y) {
+                if (x<0||y<0||x>=W||y>=H) return;
+                const idx = y*W+x;
+                if (removed[idx]) return;
+                const pi = idx*4;
+                if (bgData[pi+3] < 32) { removed[idx]=1; return; } // already transparent
+                if (colorDist(pi, bgR, bgG, bgB) <= threshold) {
+                    removed[idx] = 1;
+                    queue.push(idx);
+                }
+            }
+
+            // Seed from all 4 edges
+            for (let x=0; x<W; x++) { tryEnqueue(x,0); tryEnqueue(x,H-1); }
+            for (let y=0; y<H; y++) { tryEnqueue(0,y); tryEnqueue(W-1,y); }
+
+            // BFS flood fill (4-connected)
+            let qi = 0;
+            while (qi < queue.length) {
+                const idx = queue[qi++];
+                const x = idx % W, y = Math.floor(idx / W);
+                tryEnqueue(x+1,y); tryEnqueue(x-1,y);
+                tryEnqueue(x,y+1); tryEnqueue(x,y-1);
+            }
+
+            // Step 4: apply removal + feather edges based on cleanup slider
+            // cleanup=0 (Soft): boundary pixels get partial alpha (smooth edges)
+            // cleanup=100 (Hard): all removed pixels go fully transparent (crisp pixel edges)
+            const cleanupPct = parseInt(document.getElementById('bgCleanupSlider')?.value || '50');
+            // How aggressively to snap boundary pixels: 0=keep soft, 100=snap to 0
+            // boundaryAlpha: the alpha given to boundary pixels (0=fully removed, 255=keep)
+            const boundaryAlpha = Math.round((1 - cleanupPct / 100) * 120);
+
+            // Also expand removal by cleanup amount — at high cleanup, also remove
+            // pixels that are "mostly" surrounded by removed neighbors (erode the fringe)
+            const erodeRounds = Math.round(cleanupPct / 25); // 0-4 rounds of erosion
+
+            for (let round=0; round<erodeRounds; round++) {
+                const toRemove = [];
+                for (let y=1; y<H-1; y++) {
+                    for (let x=1; x<W-1; x++) {
+                        const idx=y*W+x;
+                        if (removed[idx]) continue;
+                        // Count how many of 8 neighbors are removed
+                        let removedNeighbors = 0;
+                        for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) {
+                            if (dx===0&&dy===0) continue;
+                            if (removed[(y+dy)*W+(x+dx)]) removedNeighbors++;
+                        }
+                        // If surrounded on 5+ sides, mark for removal too
+                        if (removedNeighbors >= 5) toRemove.push(idx);
+                    }
+                }
+                toRemove.forEach(i => { removed[i]=1; });
+            }
+
+            for (let y=0; y<H; y++) {
+                for (let x=0; x<W; x++) {
+                    const idx=y*W+x, pi=idx*4;
+                    if (!removed[idx]) continue;
+                    const onBoundary = (
+                        (x>0   && !removed[idx-1]) ||
+                        (x<W-1 && !removed[idx+1]) ||
+                        (y>0   && !removed[idx-W]) ||
+                        (y<H-1 && !removed[idx+W])
+                    );
+                    bgData[pi+3] = onBoundary ? boundaryAlpha : 0;
+                }
             }
         }
         const data = imageData.data;
@@ -2073,6 +2417,8 @@
         resText.value = w;
         renderStats();
         if (typeof fitToView === 'function') fitToView(); else applyTransform();
+        updateImageThemeDot();
+        if (currentTheme === 'image') applyImageTheme();
     }
 
     function updateButtcoinTotal() {
@@ -2304,7 +2650,14 @@
         showToast('✅ Palette image downloaded!');
     };
 
-    // toggleAllOwned/Unowned removed (ownership managed via My Paint Collection)
+    document.getElementById('toggleAllOwned').onclick = () => {
+        palette.forEach((color, i) => { if (currentCounts[i] > 0) ownedPaints.add(i); });
+        saveOwnedPaints(); updateButtcoinTotal(); renderStats();
+    };
+    document.getElementById('toggleAllUnowned').onclick = () => {
+        ownedPaints.clear();
+        saveOwnedPaints(); updateButtcoinTotal(); renderStats();
+    };
 
     // Export palette as .txt
     document.getElementById('exportTxtBtn').onclick = () => {
@@ -2779,16 +3132,27 @@
 
     function setInspectMode(on) {
         inspectMode = on;
+        // Desktop button
         const btn = document.getElementById('modeToggle');
         btn.innerHTML = on
-            ? '🔍 Inspect: ON<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint & block</span>'
-            : '🔍 Inspect: OFF<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint & block</span>';
+            ? '🔍 Inspect: ON<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint &amp; block</span>'
+            : '🔍 Inspect: OFF<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · see paint &amp; block</span>';
         btn.style.background = on ? 'var(--accent)' : '';
         btn.classList.toggle('active-inspect', on);
         frameEl.style.cursor = on ? 'crosshair' : 'default';
+        // Mobile button — always sync regardless of screen size
+        const mobBtn = document.getElementById('modeToggleMob');
+        if (mobBtn) {
+            mobBtn.textContent = on ? '🔍 Inspect: ON' : '🔍 Inspect: OFF';
+            mobBtn.style.background = on ? 'var(--accent)' : '';
+            mobBtn.style.color = on ? '#fff' : '';
+            mobBtn.classList.toggle('active-inspect', on);
+        }
         if (!on) {
             document.getElementById('paintSelected').textContent = 'Click a pixel in Inspect mode';
             document.getElementById('blockSelected').style.display = 'none';
+            const popup = document.getElementById('mobInspectPopup');
+            if (popup) { clearTimeout(popup._hideTimer); popup.style.display = 'none'; }
         }
     }
 
@@ -2901,8 +3265,43 @@
         const tpx = Math.floor((touch.clientX - rect.left) / scale / BLOCK);
         const tpy = Math.floor((touch.clientY - rect.top) / scale / BLOCK);
         const chosen = getPixelAt(touch.clientX, touch.clientY);
-        if (chosen === undefined) return;
+        if (chosen === undefined) { e.preventDefault(); return; }
         highlightPaint(chosen, tpx, tpy);
+
+        // Mobile: show floating popup near tap — stays until next tap or mode off
+        if (isMobile()) {
+            const popup    = document.getElementById('mobInspectPopup');
+            const swatchEl = document.getElementById('mobInspectSwatch');
+            const paintEl  = document.getElementById('mobInspectPaint');
+            const blockEl  = document.getElementById('mobInspectBlock');
+            const posEl    = document.getElementById('mobInspectPos');
+            if (popup) {
+                clearTimeout(popup._hideTimer);
+                if (chosen === null) {
+                    paintEl.textContent = '(transparent)';
+                    swatchEl.style.background = 'repeating-conic-gradient(#444 0% 25%, #222 0% 50%) 0 0 / 8px 8px';
+                    swatchEl.style.border = '1px dashed #666';
+                    blockEl.textContent = '';
+                } else {
+                    paintEl.textContent = chosen.name;
+                    swatchEl.style.background = chosen.hex;
+                    swatchEl.style.border = '1px solid rgba(255,255,255,0.25)';
+                    const blk = getBlockAt(tpx, tpy);
+                    blockEl.textContent = blk ? blockLabel(blk.w, blk.h) : '';
+                }
+                posEl.textContent = `pixel ${tpx}, ${tpy}`;
+                // Position above the finger, clamped to screen
+                const topPos = Math.max(8, touch.clientY - 100);
+                popup.style.top = topPos + 'px';
+                popup.style.opacity = '1';
+                popup.style.display = 'block';
+                // Auto-dismiss after 3s
+                popup._hideTimer = setTimeout(() => {
+                    popup.style.opacity = '0';
+                    setTimeout(() => { if(popup.style.opacity==='0') popup.style.display='none'; popup.style.opacity='1'; }, 250);
+                }, 3000);
+            }
+        }
         e.preventDefault();
     }, { passive: false });
 
@@ -2974,6 +3373,17 @@
     document.getElementById('upload').onchange = (e) => {
         loadImageFile(e.target.files[0]);
     };
+    // Show cleanup slider when removeBg is checked
+    document.getElementById('removeBgToggle').addEventListener('change', () => {
+        const on = document.getElementById('removeBgToggle').checked;
+        const cleanup = document.getElementById('removeBgCleanup');
+        if (cleanup) cleanup.style.display = on ? 'block' : 'none';
+        updateDisplay();
+    });
+    document.getElementById('bgCleanupSlider').addEventListener('input', () => {
+        document.getElementById('cleanupVal').textContent = document.getElementById('bgCleanupSlider').value + '%';
+        if (document.getElementById('removeBgToggle').checked) updateDisplay();
+    });
 
     // ── Cropper ───────────────────────────────────────────────────────────────
     let cropRect = null; // { x, y, w, h } in image-display coords
@@ -3219,17 +3629,31 @@
         { name: 'Abril Fatface',  family: "'Abril Fatface', cursive",        google: 'Abril+Fatface' },
     ];
 
-    let currentTheme = localStorage.getItem('yeeps_theme') || 'dark-default';
-    let currentMode  = localStorage.getItem('yeeps_mode')  || 'dark';
-    let currentFont  = localStorage.getItem('yeeps_font')  || 'Lilita One';
-    let customFontFamily = localStorage.getItem('yeeps_custom_font_family') || null;
-    let customFontName   = localStorage.getItem('yeeps_custom_font_name')   || null;
+    // ── Preferences persistence ───────────────────────────────────────────────
+    let savePrefsEnabled = localStorage.getItem('yeeps_save_prefs') !== 'off';
+
+    function lsGet(key) {
+        try { return localStorage.getItem(key); } catch(e) { return null; }
+    }
+    function lsSet(key, val) {
+        if (!savePrefsEnabled) return;
+        try { localStorage.setItem(key, val); } catch(e) {}
+    }
+    function lsDel(key) {
+        try { localStorage.removeItem(key); } catch(e) {}
+    }
+
+    let currentTheme = (savePrefsEnabled ? lsGet('yeeps_theme') : null) || 'dark-default';
+    let currentMode  = (savePrefsEnabled ? lsGet('yeeps_mode')  : null) || 'dark';
+    let currentFont  = (savePrefsEnabled ? lsGet('yeeps_font')  : null) || 'Lilita One';
+    let customFontFamily = (savePrefsEnabled ? lsGet('yeeps_custom_font_family') : null) || null;
+    let customFontName   = (savePrefsEnabled ? lsGet('yeeps_custom_font_name')   : null) || null;
 
     // Load custom font from localStorage (base64)
     function loadCustomFontFromStorage() {
         try {
-            const b64 = localStorage.getItem('yeeps_custom_font_data');
-            const ext = localStorage.getItem('yeeps_custom_font_ext');
+            const b64 = lsGet('yeeps_custom_font_data');
+            const ext = lsGet('yeeps_custom_font_ext');
             if (b64 && customFontName) {
                 const mime = ext === 'otf' ? 'font/otf' : 'font/ttf';
                 const style = document.createElement('style');
@@ -3265,21 +3689,25 @@
         document.documentElement.style.setProperty('--font', family);
         document.body.style.fontFamily = family;
         // Update all font-family references in buttons/labels via CSS var
-        try { localStorage.setItem('yeeps_font', fontName); } catch(e) {}
+        try { lsSet('yeeps_font', fontName); } catch(e) {}
         updateFontButtons();
     }
 
     function applyTheme() {
-        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme !== 'image') clearImageTheme();
+        document.documentElement.setAttribute('data-theme', currentTheme === 'image' ? 'dark-default' : currentTheme);
         document.documentElement.setAttribute('data-mode',  currentMode);
         document.querySelectorAll('.tdot').forEach(d => {
             d.classList.toggle('active', d.dataset.theme === currentTheme);
         });
+        const imgDot = document.getElementById('imageThemeDot');
+        if (imgDot) imgDot.classList.toggle('active', currentTheme === 'image');
         document.getElementById('modeDarkBtn').classList.toggle('active', currentMode === 'dark');
         document.getElementById('modeLightBtn').classList.toggle('active', currentMode === 'light');
+        if (currentTheme === 'image') applyImageTheme();
         try {
-            localStorage.setItem('yeeps_theme', currentTheme);
-            localStorage.setItem('yeeps_mode',  currentMode);
+            lsSet('yeeps_theme', currentTheme);
+            lsSet('yeeps_mode', currentMode);
         } catch(e) {}
     }
 
@@ -3351,10 +3779,10 @@
             customFontName = fontName;
             customFontFamily = `'${fontName}', sans-serif`;
             try {
-                localStorage.setItem('yeeps_custom_font_data', b64);
-                localStorage.setItem('yeeps_custom_font_ext', ext);
-                localStorage.setItem('yeeps_custom_font_family', customFontFamily);
-                localStorage.setItem('yeeps_custom_font_name', fontName);
+                lsSet('yeeps_custom_font_data', b64);
+                lsSet('yeeps_custom_font_ext', ext);
+                lsSet('yeeps_custom_font_family', customFontFamily);
+                lsSet('yeeps_custom_font_name', fontName);
             } catch(e) { showToast('Font too large to save locally', 'info'); }
             buildFontGrid();
             applyFont(fontName);
@@ -3367,8 +3795,9 @@
     buildFontGrid();
     applyTheme();
     applyFont(currentFont);
+    updateImageThemeDot();
     // Animations toggle
-    const savedAnim = localStorage.getItem('yeeps_animations');
+    const savedAnim = lsGet('yeeps_animations');
     const animOff = savedAnim === 'off';
     document.documentElement.setAttribute('data-animations', animOff ? 'off' : 'on');
     const animToggleEl = document.getElementById('animToggle');
@@ -3376,7 +3805,7 @@
     animToggleEl && animToggleEl.addEventListener('change', () => {
         const off = !animToggleEl.checked;
         document.documentElement.setAttribute('data-animations', off ? 'off' : 'on');
-        try { localStorage.setItem('yeeps_animations', off ? 'off' : 'on'); } catch(e) {}
+        try { lsSet('yeeps_animations', off ? 'off' : 'on'); } catch(e) {}
     });
 
     // Init gsBlockOptSub visibility
@@ -3621,28 +4050,624 @@
     let musicPlaying = false;
     const musicBtn = document.getElementById('musicPlayBtn');
     const musicVol = document.getElementById('musicVolume');
+    const nowPlayingWidget = document.getElementById('nowPlayingWidget');
+    const nowPlayingGif    = document.getElementById('nowPlayingGif');
+    const GIF_SRC = 'https://res.cloudinary.com/dqu51shdl/image/upload/v1773974888/giphy_iprhxa.gif';
+    // Static first frame placeholder — use a canvas trick to freeze the gif
+    // Static pause image handled via STATIC_IMG URL
+
+    const STATIC_IMG = 'https://res.cloudinary.com/dqu51shdl/image/upload/v1773975271/download_2_c3nzxq.png';
+    function setMusicState(playing) {
+        musicPlaying = playing;
+        const trackEl  = document.getElementById('nowPlayingTrack');
+        const artistEl = document.getElementById('nowPlayingArtist');
+        if (playing) {
+            musicAudio.play().catch(() => {});
+            musicBtn.textContent = '⏸ Pause';
+            musicBtn.style.background = 'var(--accent)';
+            musicBtn.style.color = '#fff';
+            nowPlayingWidget.classList.add('active');
+            nowPlayingGif.src = GIF_SRC + '?t=' + Date.now();
+            if (trackEl)  trackEl.textContent  = 'Grace FM';
+            if (artistEl) artistEl.textContent = 'Landfill';
+        } else {
+            musicAudio.pause();
+            musicBtn.textContent = '▶ Play';
+            musicBtn.style.background = 'var(--card)';
+            musicBtn.style.color = '';
+            // Show static image instead of animated gif
+            nowPlayingGif.src = STATIC_IMG;
+            if (trackEl)  trackEl.textContent  = 'NOT PLAYING';
+            if (artistEl) artistEl.textContent = '';
+        }
+    }
+
     if (musicBtn) {
-        musicBtn.onclick = () => {
-            if (musicPlaying) {
-                musicAudio.pause();
-                musicPlaying = false;
-                musicBtn.textContent = '▶ Play';
-                musicBtn.style.background = 'var(--card)';
-            } else {
-                musicAudio.play().catch(() => {});
-                musicPlaying = true;
-                musicBtn.textContent = '⏸ Pause';
-                musicBtn.style.background = 'var(--accent)';
-                musicBtn.style.color = '#fff';
-            }
-        };
+        musicBtn.onclick = () => setMusicState(!musicPlaying);
     }
     if (musicVol) {
         musicVol.oninput = () => { musicAudio.volume = musicVol.value / 100; };
     }
 
 
-        initMasterList();
+    
+    // ═══════════════════════════════════════════════════════
+    // IMAGE PALETTE THEME
+    // ═══════════════════════════════════════════════════════
+    function updateImageThemeDot() {
+        const canvas = document.getElementById('imageThemeDot');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!mappedPixels || !mappedPixels.colors) {
+            // No image — draw default gradient
+            const g = ctx.createLinearGradient(0,0,22,22);
+            g.addColorStop(0,'#df5454'); g.addColorStop(0.5,'#5d6bbd'); g.addColorStop(1,'#5ec9a0');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(11,11,11,0,Math.PI*2); ctx.fill();
+            return;
+        }
+        // Sample palette from image — pick most used colors
+        const { colors, w, h } = mappedPixels;
+        const colorCount = {};
+        colors.forEach(c => { if (c) colorCount[c.hex] = (colorCount[c.hex]||0)+1; });
+        const sorted = Object.entries(colorCount).sort((a,b)=>b[1]-a[1]);
+        // Mix chromatic colors first, then fill with all colors if needed
+        function isBoringDot(hex) {
+            const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+            const lum=0.299*r+0.587*g+0.114*b;
+            if(lum<40||lum>215) return true;
+            const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+            return mx===0||((mx-mn)/mx)<0.18;
+        }
+        const chromDot = sorted.filter(([h])=>!isBoringDot(h)).slice(0,8).map(([h])=>h);
+        const allDot = sorted.slice(0,8).map(([h])=>h);
+        const top = chromDot.length >= 4 ? chromDot : [...chromDot, ...allDot].slice(0,16);
+        // Draw tiny pixelated grid
+        const cellSize = Math.max(1, Math.floor(22 / Math.ceil(Math.sqrt(top.length))));
+        const cols = Math.ceil(22 / cellSize);
+        ctx.clearRect(0,0,22,22);
+        top.forEach((hex, i) => {
+            const cx = (i % cols) * cellSize;
+            const cy = Math.floor(i / cols) * cellSize;
+            ctx.fillStyle = hex;
+            ctx.fillRect(cx, cy, cellSize, cellSize);
+        });
+    }
+
+    function applyImageTheme() {
+        if (!mappedPixels || !mappedPixels.colors) return;
+        const { colors } = mappedPixels;
+
+        function hexToRgb(hex) {
+            return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+        }
+        function rgbToHex(r,g,b) {
+            return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+        }
+        function mix(h1,h2,t) {
+            const [r1,g1,b1]=hexToRgb(h1),[r2,g2,b2]=hexToRgb(h2);
+            return rgbToHex(r1+(r2-r1)*t,g1+(g2-g1)*t,b1+(b2-b1)*t);
+        }
+        function darken(hex,a){return mix(hex,'#000000',a);}
+        function lighten(hex,a){return mix(hex,'#ffffff',a);}
+        function lum(hex){const[r,g,b]=hexToRgb(hex);return 0.299*r+0.587*g+0.114*b;}
+        function sat(hex){const[r,g,b]=hexToRgb(hex);const mx=Math.max(r,g,b),mn=Math.min(r,g,b);return mx===0?0:(mx-mn)/mx;}
+        function isBoring(hex){const l=lum(hex),s=sat(hex);return l<40||l>215||s<0.18;}
+        function hexToRgba(hex,a){const[r,g,b]=hexToRgb(hex);return `rgba(${r},${g},${b},${a})`;}
+
+        // Get top distinct chromatic colors
+        const colorCount = {};
+        colors.forEach(c=>{if(c) colorCount[c.hex]=(colorCount[c.hex]||0)+1;});
+        const sorted = Object.entries(colorCount).sort((a,b)=>b[1]-a[1]);
+        const chromatic = sorted.filter(([h])=>!isBoring(h));
+        const pool = chromatic.length>=2 ? chromatic : sorted;
+        const picks=[];
+        for(const[hex] of pool){
+            if(picks.length>=4) break;
+            const tooClose=picks.some(p=>{
+                const[r1,g1,b1]=hexToRgb(p),[r2,g2,b2]=hexToRgb(hex);
+                return Math.sqrt((r1-r2)**2+(g1-g2)**2+(b1-b2)**2)<55;
+            });
+            if(!tooClose) picks.push(hex);
+        }
+        while(picks.length<2) picks.push(pool[picks.length]?.[0]||'#446688');
+        const[c1,c2,c3,c4]=picks;
+        const isDark=currentMode==='dark';
+        const darkAmt = isDark ? 0.86 : 0;
+        const lightAmt = isDark ? 0 : 0.86;
+
+        // Each color darkened/lightened to be a deep bg shade
+        function bgShade(hex){ return isDark ? darken(hex,0.86) : lighten(hex,0.88); }
+
+        // The full-page gradient goes left→right using the palette colors
+        // Left panel area ~0-15%, center ~15-80%, right panel ~80-100%
+        const grad = picks.map((c,i)=>{
+            const pct = picks.length===1 ? '50%' : `${Math.round(i/(picks.length-1)*100)}%`;
+            return `${bgShade(c)} ${pct}`;
+        }).join(', ');
+        const gradient = `linear-gradient(135deg, ${grad})`;
+
+        // CSS vars — use c1 as the main accent, c2 as secondary
+        const accent   = c1;
+        const h1shadow = c2;
+        const card     = isDark ? mix(darken(c1,0.72),darken(c2,0.72),0.5) : mix(lighten(c1,0.78),lighten(c2,0.78),0.5);
+        const bdr      = isDark ? darken(c2,0.58) : lighten(c2,0.60);
+        const bdr2     = isDark ? darken(c3||c2,0.50) : lighten(c3||c2,0.52);
+        const btnSec   = isDark ? darken(c4||c2,0.62) : lighten(c4||c2,0.65);
+        const text     = isDark ? '#ebebeb' : '#1a1a1a';
+        const text2    = isDark ? '#aaa' : '#666';
+
+        // bg/bg2/bg3 — not really used for the main backdrop, but still set for modals/cards
+        const bg  = bgShade(c1);
+        const bg2 = bgShade(c2);
+        const bg3 = bgShade(c3||c1);
+
+        const el=document.documentElement;
+        el.style.setProperty('--bg',       bg);
+        el.style.setProperty('--bg2',      bg2);
+        el.style.setProperty('--bg3',      bg3);
+        el.style.setProperty('--card',     card);
+        el.style.setProperty('--border',   bdr);
+        el.style.setProperty('--border2',  bdr2);
+        el.style.setProperty('--text',     text);
+        el.style.setProperty('--text2',    text2);
+        el.style.setProperty('--accent',   accent);
+        el.style.setProperty('--accent2',  darken(accent,0.15));
+        el.style.setProperty('--h1-shadow',h1shadow);
+        el.style.setProperty('--btn-sec',  btnSec);
+        el.style.setProperty('--input-bg', isDark ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)');
+        el.style.setProperty('--checker1', isDark ? darken(c1,0.80) : lighten(c1,0.80));
+        el.style.setProperty('--checker2', isDark ? darken(c2,0.84) : lighten(c2,0.84));
+
+        document.documentElement.setAttribute('data-theme-image','1');
+
+        let imgStyleEl=document.getElementById('imageThemeStyle');
+        if(!imgStyleEl){
+            imgStyleEl=document.createElement('style');
+            imgStyleEl.id='imageThemeStyle';
+            document.head.appendChild(imgStyleEl);
+        }
+
+        // Overlay alpha — how "transparent" each panel feels over the gradient
+        const oa = isDark ? 0.55 : 0.45; // overlay opacity
+
+        imgStyleEl.textContent = `
+            /* Gradient fills the entire app shell */
+            html[data-theme-image] #appShell {
+                background: ${gradient} !important;
+                background-attachment: fixed !important;
+            }
+            /* Each panel is a semi-transparent dark/light overlay so the gradient shows through */
+            html[data-theme-image] .viewer-section {
+                background: ${isDark?`rgba(0,0,0,${oa})`:`rgba(255,255,255,${oa})`} !important;
+                backdrop-filter: blur(0px);
+            }
+            html[data-theme-image] #frameSection {
+                background: transparent !important;
+            }
+            html[data-theme-image] .palette-section {
+                background: ${isDark?`rgba(0,0,0,${oa})`:`rgba(255,255,255,${oa})`} !important;
+            }
+            html[data-theme-image] .header-section {
+                background: ${isDark?`rgba(0,0,0,0.35)`:`rgba(255,255,255,0.35)`} !important;
+            }
+            html[data-theme-image] .main-layout {
+                background: transparent !important;
+            }
+            html[data-theme-image] .controls {
+                background: transparent !important;
+            }
+            html[data-theme-image] .color-card {
+                background: ${isDark?`rgba(0,0,0,0.35)`:`rgba(255,255,255,0.35)`} !important;
+            }
+            html[data-theme-image] .gs-row {
+                background: ${isDark?`rgba(0,0,0,0.3)`:`rgba(255,255,255,0.3)`} !important;
+            }
+        `;
+    }
+
+    function clearImageTheme() {
+        const vars = ['--bg','--bg2','--bg3','--card','--border','--border2','--text','--text2',
+                      '--accent','--accent2','--h1-shadow','--btn-sec','--input-bg','--checker1','--checker2'];
+        vars.forEach(v => document.documentElement.style.removeProperty(v));
+        document.documentElement.removeAttribute('data-theme-image');
+        const el = document.getElementById('imageThemeStyle');
+        if (el) el.remove();
+    }
+
+    // Wire image theme dot click
+    const imageThemeDotEl = document.getElementById('imageThemeDot');
+    if (imageThemeDotEl) {
+        imageThemeDotEl.addEventListener('click', () => {
+            currentTheme = 'image';
+            document.querySelectorAll('.tdot').forEach(d => d.classList.remove('active'));
+            imageThemeDotEl.classList.add('active');
+            applyImageTheme();
+            try { lsSet('yeeps_theme', 'image'); } catch(e){}
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // CUSTOM MUSIC
+    // ═══════════════════════════════════════════════════════
+    const MAX_CUSTOM_SONGS = 10;
+    let customTracks = []; // [{name, data(base64)}]
+    let currentCustomIdx = -1; // which custom track is playing (-1 = none)
+    const customAudio = new Audio();
+    customAudio.volume = 0.3;
+
+    function saveCustomTracks() { /* Custom music does not save — MP3s are too large for localStorage */ }
+    function loadCustomTracks() { /* nothing to load */ }
+
+    function stopAllMusic() {
+        // Stop Grace FM
+        if (musicPlaying) setMusicState(false);
+        // Stop custom
+        customAudio.pause();
+        currentCustomIdx = -1;
+        renderCustomMusicList();
+    }
+
+    function playCustomTrack(idx) {
+        stopAllMusic();
+        const track = customTracks[idx];
+        if (!track) return;
+        currentCustomIdx = idx;
+        customAudio.src = track.data;
+        customAudio.loop = true;
+        customAudio.play().catch(()=>{});
+        renderCustomMusicList();
+        // Update now-playing widget
+        const trackEl  = document.getElementById('nowPlayingTrack');
+        const artistEl = document.getElementById('nowPlayingArtist');
+        if (trackEl)  trackEl.textContent  = track.name.replace(/\.mp3$/i,'');
+        if (artistEl) artistEl.textContent = 'Local File';
+        if (nowPlayingWidget) nowPlayingWidget.classList.add('active');
+        if (nowPlayingGif)    nowPlayingGif.src = GIF_SRC + '?t=' + Date.now();
+    }
+
+    function stopCustomTrack() {
+        customAudio.pause();
+        currentCustomIdx = -1;
+        renderCustomMusicList();
+        if (nowPlayingWidget) nowPlayingWidget.classList.remove('active');
+    }
+
+    function renderCustomMusicList() {
+        const list = document.getElementById('customMusicList');
+        if (!list) return;
+        list.innerHTML = '';
+        if (customTracks.length === 0) {
+            list.innerHTML = '<div style="font-size:0.72rem;color:var(--text3);padding:4px 2px;">No custom songs yet. Add up to 10 MP3s.</div>';
+            return;
+        }
+        customTracks.forEach((track, i) => {
+            const row = document.createElement('div');
+            row.className = 'cm-track';
+            const isPlaying = i === currentCustomIdx;
+            row.innerHTML = `
+                <div class="cm-track-info">
+                    <div class="cm-track-name">${track.name.replace(/\.mp3$/i,'')}</div>
+                    <div class="cm-track-artist">Local File</div>
+                </div>
+                <button class="cm-play-btn${isPlaying?' playing':''}" data-idx="${i}">${isPlaying?'⏸':'▶'}</button>
+                <button class="cm-del-btn" data-del="${i}">✕</button>
+            `;
+            row.querySelector('.cm-play-btn').onclick = () => {
+                if (isPlaying) stopCustomTrack();
+                else playCustomTrack(i);
+            };
+            row.querySelector('.cm-del-btn').onclick = () => {
+                if (currentCustomIdx === i) stopCustomTrack();
+                customTracks.splice(i, 1);
+                if (currentCustomIdx > i) currentCustomIdx--;
+                saveCustomTracks();
+                renderCustomMusicList();
+            };
+            list.appendChild(row);
+        });
+    }
+    renderCustomMusicList();
+
+    // File input for adding custom music
+    const musicFileInput = document.getElementById('musicFileInput');
+    if (musicFileInput) {
+        musicFileInput.addEventListener('change', (e) => {
+            const files = [...e.target.files];
+            let added = 0;
+            const remaining = MAX_CUSTOM_SONGS - customTracks.length;
+            if (remaining <= 0) { showToast('Max 10 songs reached!', 'info'); return; }
+            files.slice(0, remaining).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    customTracks.push({ name: file.name, data: ev.target.result });
+                    added++;
+                    if (added === Math.min(files.length, remaining)) {
+                        saveCustomTracks();
+                        renderCustomMusicList();
+                        showToast(`✅ Added ${added} song${added>1?'s':''}!`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            if (files.length > remaining) showToast(`Only ${remaining} slot${remaining>1?'s':''} left — first ${remaining} added.`, 'info');
+            musicFileInput.value = '';
+        });
+    }
+
+    // When image loads, update the dot and re-apply if image theme active
+    const _origRenderStats = renderStats;
+
+
+    // ── Save prefs button ─────────────────────────────────────────────────────
+    function updateSavePrefsBtnUI() {
+        const btn = document.getElementById('savePrefsBtn');
+        if (!btn) return;
+        btn.textContent = savePrefsEnabled ? '💾 Saving On' : '💾 Saving Off';
+        btn.style.background = savePrefsEnabled ? 'var(--accent)' : 'var(--btn-sec)';
+        btn.style.color = savePrefsEnabled ? '#fff' : 'var(--text2)';
+    }
+    const savePrefsBtnEl = document.getElementById('savePrefsBtn');
+    if (savePrefsBtnEl) {
+        updateSavePrefsBtnUI();
+        savePrefsBtnEl.addEventListener('click', () => {
+            savePrefsEnabled = !savePrefsEnabled;
+            try { localStorage.setItem('yeeps_save_prefs', savePrefsEnabled ? 'on' : 'off'); } catch(e) {}
+            updateSavePrefsBtnUI();
+            if (savePrefsEnabled) {
+                lsSet('yeeps_theme', currentTheme);
+                lsSet('yeeps_mode', currentMode);
+                lsSet('yeeps_font', currentFont);
+                lsSet('yeeps_animations', document.getElementById('animToggle')?.checked ? 'on' : 'off');
+                showToast('💾 Preferences saving is ON');
+            } else {
+                showToast('Saving is OFF — preferences will not persist', 'info');
+            }
+        });
+    }
+
+    document.getElementById('clearPrefsBtn').addEventListener('click', () => {
+        if (!confirm('This will reset ALL preferences to default — theme, fonts, custom music, everything. Continue?')) return;
+        // Clear all keys
+        const keys = ['yeeps_theme','yeeps_mode','yeeps_font','yeeps_custom_font_data',
+                      'yeeps_custom_font_ext','yeeps_custom_font_family','yeeps_custom_font_name',
+                      'yeeps_animations','yeeps_custom_music','yeeps_collection','yeeps_owned',
+                      'yeeps_save_prefs','yeeps_music_count'];
+        for (let i = 0; i < 10; i++) { keys.push('yeeps_music_'+i+'_name'); keys.push('yeeps_music_'+i+'_data'); }
+        keys.forEach(k => { try { localStorage.removeItem(k); } catch(_) {} });
+        // Reset state
+        customTracks = []; if (typeof stopAllMusic === 'function') stopAllMusic(); stopAllMusic(); renderCustomMusicList();
+        currentTheme = 'dark-default'; currentMode = 'dark';
+        applyTheme();
+        applyFont('Lilita One');
+        savePrefsEnabled = true; updateSavePrefsBtnUI();
+        document.getElementById('animToggle').checked = true;
+        document.documentElement.setAttribute('data-animations','on');
+        showToast('✅ Everything reset to default!');
+    });
+
+
+    // ═══════════════════════════════════════════════════════
+    // MOBILE BOTTOM SHEET
+    // ═══════════════════════════════════════════════════════
+    function isMobile() { return window.innerWidth <= 900; }
+
+    function initMobileSheet() {
+        const sheet = document.getElementById('mobileSheet');
+        if (!sheet) return;
+        if (!isMobile()) { sheet.style.display = 'none'; return; }
+        sheet.style.display = 'flex';
+
+        // ── Tab switching ──
+        document.querySelectorAll('.mob-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('active'));
+                document.querySelectorAll('.mob-panel').forEach(p=>p.classList.remove('active'));
+                tab.classList.add('active');
+                const panel = document.querySelector(`[data-mobpanel="${tab.dataset.mobtab}"]`);
+                if (panel) {
+                    panel.classList.add('active');
+                    if (tab.dataset.mobtab === 'blocks') updateMobBlockList();
+                    if (tab.dataset.mobtab === 'paints') updateMobPaints();
+                    if (tab.dataset.mobtab === 'all') buildMobMasterGrid();
+                }
+            });
+        });
+
+        // ── Mirror sliders/controls to desktop equivalents ──
+        function mirrorSlider(mobId, deskId) {
+            const mob = document.getElementById(mobId);
+            const desk = document.getElementById(deskId);
+            if (!mob || !desk) return;
+            mob.value = desk.value;
+            mob.addEventListener('input', () => { desk.value = mob.value; desk.dispatchEvent(new Event('input')); });
+            desk.addEventListener('input', () => { if(mob.value !== desk.value) mob.value = desk.value; });
+        }
+        mirrorSlider('resSliderMob','resSlider');
+        mirrorSlider('zoomSliderMob','zoomSlider');
+        mirrorSlider('hueSliderMob','hueSlider');
+
+        // Text input → dispatch 'change' to desktop text, which in turn updates slider + display
+        // Also immediately update the paired mob slider so it moves visually
+        function mirrorText(mobId, deskId, mobSliderId, deskSliderId) {
+            const mob = document.getElementById(mobId);
+            const desk = document.getElementById(deskId);
+            const mobSlider = mobSliderId ? document.getElementById(mobSliderId) : null;
+            const deskSlider = deskSliderId ? document.getElementById(deskSliderId) : null;
+            if (!mob || !desk) return;
+            mob.value = desk.value;
+            mob.addEventListener('change', () => {
+                desk.value = mob.value;
+                desk.dispatchEvent(new Event('change')); // triggers desktop validation + updateDisplay
+                // Sync mob slider visually after desktop processes it
+                if (mobSlider && deskSlider) mobSlider.value = deskSlider.value;
+            });
+            // Keep mob text in sync when desktop slider moves
+            if (deskSlider) {
+                deskSlider.addEventListener('input', () => {
+                    if (mob.value !== deskSlider.value) mob.value = deskSlider.value;
+                });
+            }
+        }
+        mirrorText('resTextMob','resText','resSliderMob','resSlider');
+        mirrorText('zoomTextMob','zoomText','zoomSliderMob','zoomSlider');
+        mirrorText('hueTextMob','hueText','hueSliderMob','hueSlider');
+
+        // ── Mirror remove BG toggle ──
+        const mobBg = document.getElementById('removeBgToggleMob');
+        const deskBg = document.getElementById('removeBgToggle');
+        if (mobBg && deskBg) {
+            mobBg.checked = deskBg.checked;
+            mobBg.addEventListener('change', () => { deskBg.checked = mobBg.checked; deskBg.dispatchEvent(new Event('change')); });
+        }
+
+        // ── Mirror buttons ──
+        document.getElementById('fitViewMob')?.addEventListener('click', () => fitToView());
+        document.getElementById('resetZoomMob')?.addEventListener('click', () => { zoomSlider.value=100; panX=0; panY=0; applyTransform(); });
+        document.getElementById('cropBtnMob')?.addEventListener('click', () => openModal(document.getElementById('cropModal')));
+        document.getElementById('stepGuideMob')?.addEventListener('click', () => document.getElementById('stepGuideBtn')?.click());
+        document.getElementById('downloadSmallMob')?.addEventListener('click', () => doDownload(false));
+        document.getElementById('downloadBigMob')?.addEventListener('click', () => doDownload(true));
+        document.getElementById('gridGearMob')?.addEventListener('click', () => openModal(document.getElementById('gridSettingsModal')));
+        document.getElementById('modeToggleMob')?.addEventListener('click', () => setInspectMode(!inspectMode));
+
+        // Grid toggle mirror
+        const gridMob = document.getElementById('toggleGridMob');
+        if (gridMob) {
+            gridMob.addEventListener('click', () => {
+                document.getElementById('toggleGrid')?.click();
+                gridMob.textContent = gridVisible ? 'Grid: ON' : 'Grid: OFF';
+                gridMob.style.background = gridVisible ? 'var(--accent)' : '';
+            });
+        }
+
+        // ── Mobile My Paint Collection — opens the same modal ──
+        document.getElementById('mobMyPaintsBtn')?.addEventListener('click', () => {
+            openModal(document.getElementById('myPaintsModal'));
+        });
+
+        // ── Search in paints tab ──
+        document.getElementById('searchBarMob')?.addEventListener('input', (e) => {
+            document.getElementById('searchBar').value = e.target.value;
+            renderStats();
+            updateMobPaints();
+        });
+
+        // ── Master search ──
+        document.getElementById('masterSearchMob')?.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('#mobMasterGrid .master-item').forEach(item => {
+                const name = item.querySelector('span')?.textContent?.toLowerCase() || '';
+                item.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+
+        updateMobStats();
+        updateMobPaints();
+        buildMobMasterGrid();
+    }
+
+    function updateMobStats() {
+        if (!isMobile()) return;
+        const blocksEl = document.getElementById('mobBlocksVal');
+        const paintsEl = document.getElementById('mobPaintsVal');
+        const costEl   = document.getElementById('mobCostVal');
+        if (blocksEl) blocksEl.textContent = document.getElementById('totalBlocksCount')?.textContent || '—';
+        if (paintsEl) paintsEl.textContent = document.getElementById('totalPaintsCount')?.textContent || '—';
+        let cost = 0;
+        palette.forEach((c,i) => { if (currentCounts[i]>0 && !ownedPaints.has(i)) cost += 300; });
+        const coinImg = `<img src="https://i.imgur.com/avt2tut.png" style="width:14px;height:14px;vertical-align:middle;margin-right:3px;">`;
+        const coinImgLg = `<img src="https://i.imgur.com/avt2tut.png" style="width:22px;height:22px;vertical-align:middle;">`;
+        if (costEl) costEl.innerHTML = coinImg + (cost > 0 ? cost.toLocaleString() : '0');
+        const mobCoin = document.getElementById('mobButtcoin');
+        if (mobCoin) mobCoin.innerHTML = `${coinImgLg} ${cost.toLocaleString()} Buttcoins needed`;
+    }
+
+    function updateMobPaints() {
+        if (!isMobile()) return;
+        const container = document.getElementById('mobPaletteStats');
+        if (!container) return;
+        const query = document.getElementById('searchBarMob')?.value?.toLowerCase() || '';
+        const totalPx = currentCounts.reduce((a,b)=>a+b,0);
+        container.innerHTML = '';
+        palette.forEach((color, i) => {
+            if (currentCounts[i] > 0 && color.name.toLowerCase().includes(query)) {
+                const pct = totalPx>0 ? ((currentCounts[i]/totalPx)*100).toFixed(1) : '0.0';
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.innerHTML = `<div class="swatch" style="background:${color.hex}"></div>
+                    <div style="flex:1"><b>${color.name}</b><br><span style="font-size:0.75rem;opacity:0.6">${currentCounts[i].toLocaleString()} px · ${pct}%</span></div>`;
+                container.appendChild(card);
+            }
+        });
+    }
+
+    function updateMobBlockList() {
+        if (!isMobile()) return;
+        const list = document.getElementById('mobBlockList');
+        if (!list) return;
+        const result = getBlockGridResult();
+        if (!result) { list.innerHTML = '<div style="color:var(--text3);font-size:0.8rem;">Load an image with block optimization on.</div>'; return; }
+        list.innerHTML = '';
+        const { blockCounts } = result;
+        let any = false;
+        YEEPS_BLOCK_DEFS.forEach(def => {
+            const count = blockCounts[def.key] || 0;
+            if (!count) return;
+            any = true;
+            const row = document.createElement('div');
+            row.className = 'gs-block-count-row';
+            row.innerHTML = `<span class="gs-bc-label">${def.label}</span><span class="gs-bc-count">${count.toLocaleString()}</span>`;
+            list.appendChild(row);
+        });
+        if (!any) list.innerHTML = '<div style="color:var(--text3);font-size:0.8rem;">No blocks yet.</div>';
+    }
+
+    function buildMobMasterGrid() {
+        if (!isMobile()) return;
+        const grid = document.getElementById('mobMasterGrid');
+        if (!grid || grid.childElementCount > 0) return; // already built
+        palette.forEach((color, i) => {
+            const item = document.createElement('div');
+            item.className = `master-item ${color.active ? '' : 'off'}`;
+            item.innerHTML = `<input type="checkbox" ${color.active?'checked':''}><div class="swatch" style="width:14px;height:14px;margin-right:6px;background:${color.hex}"></div><span>${color.name}</span>`;
+            item.querySelector('input').onchange = (e) => {
+                palette[i].active = e.target.checked;
+                item.classList.toggle('off', !e.target.checked);
+                // Also sync desktop master grid
+                const deskCb = document.querySelector(`#masterGrid .master-item:nth-child(${i+1}) input`);
+                if (deskCb) deskCb.checked = e.target.checked;
+                updateDisplay();
+            };
+            grid.appendChild(item);
+        });
+    }
+
+    // Hook renderStats and updateCounters to also update mobile
+    const _origRenderStatsMob = renderStats;
+    const _origUpdateCountersMob = updateCounters;
+    // Patch updateCounters
+    const __updateCounters = updateCounters;
+    updateCounters = function() {
+        __updateCounters();
+        updateMobStats();
+        if (isMobile()) {
+            const activeTab = document.querySelector('.mob-tab.active')?.dataset?.mobtab;
+            if (activeTab === 'paints') updateMobPaints();
+            if (activeTab === 'blocks') updateMobBlockList();
+        }
+    };
+
+    // Init on load and resize
+    initMobileSheet();
+    window.addEventListener('resize', () => {
+        const sheet = document.getElementById('mobileSheet');
+        if (!sheet) return;
+        if (isMobile()) { sheet.style.display='flex'; initMobileSheet(); }
+        else { sheet.style.display='none'; }
+    });
+
+    initMasterList();
     // Master paints search filter
     const masterSearchBar = document.getElementById('masterSearchBar');
     if (masterSearchBar) {
