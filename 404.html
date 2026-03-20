@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script>
+    // GitHub Pages 404 trick: redirect /share/XXX back to index.html?s=XXX
+    const path = window.location.pathname;
+    const match = path.match(/\/share\/([A-Za-z0-9_-]+)/);
+    if (match) {
+        window.location.replace('/?s=' + match[1]);
+    } else {
+        window.location.replace('/');
+    }
+</script>
+</head>
+<body></body>
+</html>
