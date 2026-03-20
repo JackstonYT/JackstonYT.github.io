@@ -1572,7 +1572,7 @@
                 </div>
             </div>
             <div class="gs-row">
-                <label><input type="checkbox" id="gsSaveGrid"> Save Grid with PNG</label>
+                <label><input type="checkbox" id="gsSaveGrid" checked> Save Grid with PNG (Big only)</label>
                 <div class="gs-desc">When downloading, bakes the current grid overlay into the exported PNG.</div>
             </div>
             <div class="gs-row">
@@ -2557,42 +2557,71 @@
     function doDownload(big) {
         const { colors, w, h } = mappedPixels || {};
         if (!colors) return;
-        const saveGrid = document.getElementById('gsSaveGrid') && document.getElementById('gsSaveGrid').checked;
-        // Small = 1px per pixel; Big = BLOCK px per pixel (same as canvas render)
+
+        // Grid only applies to Big download
+        const saveGridEl = document.getElementById('gsSaveGrid');
+        const saveGrid = big && saveGridEl && saveGridEl.checked;
+
+        // Small = 1px per pixel (never grid); Big = BLOCK px per pixel
         const bs = big ? BLOCK : 1;
         const dlCanvas = document.createElement('canvas');
         dlCanvas.width = w * bs; dlCanvas.height = h * bs;
         const dlCtx = dlCanvas.getContext('2d');
+
+        // Draw pixels
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
                 const c = colors[y * w + x];
                 if (c) { dlCtx.fillStyle = c.hex; dlCtx.fillRect(x*bs, y*bs, bs, bs); }
             }
         }
-        if (saveGrid && gridVisible) {
+
+        // Draw grid if enabled — always use current block opt state, ignore gridVisible toggle
+        if (saveGrid) {
             const offsetX = parseFloat(document.getElementById('gridOffsetX').value) || 0;
             const offsetY = parseFloat(document.getElementById('gridOffsetY').value) || 0;
             const blockOpt = document.getElementById('gsBlockOpt') && document.getElementById('gsBlockOpt').checked;
             const ox = offsetX * bs, oy = offsetY * bs;
             dlCtx.strokeStyle = 'rgba(0,0,0,0.7)';
             dlCtx.lineWidth = 1;
+
             if (blockOpt) {
-                const edges = getBlockGridEdges();
-                if (edges) edges.forEach(e => {
-                    const p = e.split(',');
-                    if (p[0]==='h') { const px=parseInt(p[1])*bs+ox, py=Math.round(parseInt(p[2])*bs+oy)+0.5; dlCtx.beginPath(); dlCtx.moveTo(px,py); dlCtx.lineTo(px+bs,py); dlCtx.stroke(); }
-                    else { const px=Math.round(parseInt(p[1])*bs+ox)+0.5, py=parseInt(p[2])*bs+oy; dlCtx.beginPath(); dlCtx.moveTo(px,py); dlCtx.lineTo(px,py+bs); dlCtx.stroke(); }
-                });
+                // Use full block grid result including unique blocks and all active block types
+                const result = getBlockGridResult();
+                const edges = result ? result.edges : null;
+                if (edges) {
+                    edges.forEach(e => {
+                        const p = e.split(',');
+                        if (p[0]==='h') {
+                            const px = parseInt(p[1])*bs+ox;
+                            const py = Math.round(parseInt(p[2])*bs+oy)+0.5;
+                            dlCtx.beginPath(); dlCtx.moveTo(px,py); dlCtx.lineTo(px+bs,py); dlCtx.stroke();
+                        } else {
+                            const px = Math.round(parseInt(p[1])*bs+ox)+0.5;
+                            const py = parseInt(p[2])*bs+oy;
+                            dlCtx.beginPath(); dlCtx.moveTo(px,py); dlCtx.lineTo(px,py+bs); dlCtx.stroke();
+                        }
+                    });
+                }
             } else {
-                for (let x=0; x<=w; x++) { const px=Math.round(x*bs+ox)+0.5; dlCtx.beginPath(); dlCtx.moveTo(px,0); dlCtx.lineTo(px,h*bs); dlCtx.stroke(); }
-                for (let y=0; y<=h; y++) { const py=Math.round(y*bs+oy)+0.5; dlCtx.beginPath(); dlCtx.moveTo(0,py); dlCtx.lineTo(w*bs,py); dlCtx.stroke(); }
+                // Simple uniform grid
+                for (let x=0; x<=w; x++) {
+                    const px = Math.round(x*bs+ox)+0.5;
+                    dlCtx.beginPath(); dlCtx.moveTo(px,0); dlCtx.lineTo(px,h*bs); dlCtx.stroke();
+                }
+                for (let y=0; y<=h; y++) {
+                    const py = Math.round(y*bs+oy)+0.5;
+                    dlCtx.beginPath(); dlCtx.moveTo(0,py); dlCtx.lineTo(w*bs,py); dlCtx.stroke();
+                }
             }
         }
+
         const link = document.createElement('a');
-        link.download = big ? 'yeeps-colors-big.png' : 'yeeps-colors.png';
+        link.download = big ? 'yeeps-colors-big.png' : 'yeeps-colors-small.png';
         link.href = dlCanvas.toDataURL();
         link.click();
-        showToast(big ? '✅ Big PNG downloaded!' : '✅ Small PNG downloaded!');
+        const gridNote = saveGrid ? ' (with grid)' : '';
+        showToast(big ? `✅ Big PNG downloaded${gridNote}!` : '✅ Small PNG downloaded!');
     }
     document.getElementById('downloadSmall').onclick = () => doDownload(false);
     document.getElementById('downloadBig').onclick   = () => doDownload(true);
