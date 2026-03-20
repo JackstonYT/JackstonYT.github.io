@@ -1636,8 +1636,8 @@
                                 <div class="gs-warn" id="uniqWarn_1x3">Enable Vending Machine before enabling this!</div>
                             </div>
                         </div>
-                        <div class="gs-unique-row" id="uniqRow_4x6">
-                            <label><input type="checkbox" id="uniq_4x6" checked> Horror Table (4×6) <span style="color:#e05555; font-size:0.72rem; margin-left:4px;">(ONLY MAROON)</span></label>
+                        <div class="gs-unique-row" id="uniqRow_3x6">
+                            <label><input type="checkbox" id="uniq_3x6" checked> Horror Table (3×6) <span style="color:#e05555; font-size:0.72rem; margin-left:4px;">(ONLY MAROON)</span></label>
                         </div>
                     </div>
                 </div>
@@ -1770,7 +1770,7 @@
         { key:'8x8',   label:'Wood Block (8×8)',               type:'Wood Block',            w:8,  h:8,  active:true  }, // P2  area 64
         { key:'4x8',   label:'Wood Block (4×8)',               type:'Wood Block',            w:4,  h:8,  active:true  }, // P3  area 32
         { key:'2x16',  label:'Wood Block (2×16)',              type:'Wood Block',            w:2,  h:16, active:true  }, // P4  area 32
-        { key:'4x6',   label:'Horror Table (4×6)',             type:'Horror Table',          w:4,  h:6,  active:false, unique:true }, // P5  area 24
+        { key:'3x6',   label:'Horror Table (3×6)',             type:'Horror Table',          w:3,  h:6,  active:false, unique:true }, // P5  area 18
         { key:'4x4',   label:'Wood Block (4×4)',               type:'Wood Block',            w:4,  h:4,  active:true  }, // P6  area 16
         { key:'2x8',   label:'Wood Block (2×8)',               type:'Wood Block',            w:2,  h:8,  active:true  }, // P7  area 16
         { key:'1x16',  label:'Wood Block (1×16)',              type:'Wood Block',            w:1,  h:16, active:false, sideways:true }, // P8  area 16 — sideways, off by default
@@ -1812,10 +1812,10 @@
         }
 
         // canFit: checks if a block of size bw×bh fits at (sx,sy) with same color hex
-        // Horror Table (4x6) is maroon-only — hex #9D4141
+        // Horror Table (3x6) is maroon-only — hex #9D4141
         const HORROR_TABLE_HEX = '#9D4141';
         function canFit(sx, sy, bw, bh, hex, key) {
-            if (key === '4x6' && hex.toUpperCase() !== HORROR_TABLE_HEX.toUpperCase()) return false;
+            if (key === '3x6' && hex.toUpperCase() !== HORROR_TABLE_HEX.toUpperCase()) return false;
             if (sx + bw > w || sy + bh > h) return false;
             for (let dy = 0; dy < bh; dy++)
                 for (let dx = 0; dx < bw; dx++) {
@@ -2773,7 +2773,7 @@
     }
 
     // Keys managed by the Unique Blocks UI (not shown in Blocks tab)
-    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '4x6']);
+    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '3x6']);
 
     function invalidateAndRefresh() {
         blockGridFor = null; renderCanvas(); updateCounters();
@@ -2896,12 +2896,12 @@
     function checkAllUniquesOff() {
         const bp   = document.getElementById('uniq_16x16');
         const vm   = document.getElementById('uniq_3x2');
-        const ht   = document.getElementById('uniq_4x6');
+        const ht   = document.getElementById('uniq_3x6');
         const gsUB = document.getElementById('gsUniqueBlocks');
         if (bp && vm && ht && gsUB) {
             if (!bp.checked && !vm.checked && !ht.checked) {
                 gsUB.checked = false;
-                ['16x16','3x2','1x3','4x6'].forEach(k => syncUniqueBlockDef(k, false));
+                ['16x16','3x2','1x3','3x6'].forEach(k => syncUniqueBlockDef(k, false));
                 updateUniquePanelVisibility();
             }
         }
@@ -2912,8 +2912,8 @@
         const on = document.getElementById('gsUniqueBlocks').checked;
         updateUniquePanelVisibility();
         if (!on) {
-            ['16x16','3x2','1x3','4x6'].forEach(k => syncUniqueBlockDef(k, false));
-            ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_4x6'].forEach(id => {
+            ['16x16','3x2','1x3','3x6'].forEach(k => syncUniqueBlockDef(k, false));
+            ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_3x6'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.checked = false;
             });
@@ -2921,7 +2921,7 @@
             syncUniqueBlockDef('16x16', document.getElementById('uniq_16x16').checked);
             syncUniqueBlockDef('3x2',   document.getElementById('uniq_3x2').checked);
             syncUniqueBlockDef('1x3',   document.getElementById('uniq_1x3').checked);
-            syncUniqueBlockDef('4x6',   document.getElementById('uniq_4x6').checked);
+            syncUniqueBlockDef('3x6',   document.getElementById('uniq_3x6').checked);
         }
         invalidateAndRefresh();
     });
@@ -2931,8 +2931,8 @@
         checkAllUniquesOff();
         invalidateAndRefresh();
     });
-    document.getElementById('uniq_4x6').addEventListener('change', () => {
-        syncUniqueBlockDef('4x6', document.getElementById('uniq_4x6').checked);
+    document.getElementById('uniq_3x6').addEventListener('change', () => {
+        syncUniqueBlockDef('3x6', document.getElementById('uniq_3x6').checked);
         checkAllUniquesOff();
         invalidateAndRefresh();
     });
@@ -2978,7 +2978,7 @@
         document.querySelectorAll('#gsBlockToggles input[type=checkbox]').forEach(cb => { cb.checked = true; });
         document.querySelectorAll('#gsBlockToggles .gs-block-toggle-row').forEach(r => { r.classList.remove('off','dep-disabled'); });
         // Sync unique blocks
-        ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_4x6'].forEach(id => {
+        ['uniq_16x16','uniq_3x2','uniq_1x3','uniq_3x6'].forEach(id => {
             const el = document.getElementById(id); if (el) el.checked = true;
         });
         document.getElementById('gsUniqueBlocks').checked = true;
@@ -3125,8 +3125,9 @@
         if (small === 1 && large === 16) return '1×16 Block (SIDEWAYS 2×16)';
         if (small === 2 && large === 16) return '2×16 Block';
 
-        // Horror Table (canonical 4×6)
-        if (small === 4 && large === 6) return '4×6 Horror Table';
+        // Horror Table — 3×6 or 6×3
+        if (w === 3 && h === 6) return '3×6 Horror Table';
+        if (w === 6 && h === 3) return '6×3 Horror Table';
 
         // All other Wood Blocks
         return `${small}×${large} Block`;
