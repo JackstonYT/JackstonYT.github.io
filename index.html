@@ -4182,6 +4182,7 @@
         { title: 'Yee Haw',      artist: 'Yeeps',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026382/Yeeps_OST_-_Desert_Theme__Yee-Haw_lynh0r.mp3' },
         { title: 'Horror Bear',  artist: 'Yeeps',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026440/Yeeps_Horror_Ost_-_Horror_Bear_tphjfd.mp3' },
         { title: 'Wilds Style',  artist: 'BatVR',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026551/YEEPS__Hide_and_Seek_OST_-_Wilds_Style_mze6mr.mp3' },
+        { title: 'Pink',         artist: 'Ech0',   src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774069779/Pink_zpdh41.mp3' },
     ];
 
     const GIF_SRC    = 'https://res.cloudinary.com/dqu51shdl/image/upload/v1773974888/giphy_iprhxa.gif';
@@ -4927,7 +4928,6 @@
             v: 1, // version
             scale:  parseInt(document.getElementById('resSlider').value),
             hue:    parseInt(document.getElementById('hueSlider').value),
-            grid:   gridVisible ? 1 : 0,
             gridX:  parseFloat(document.getElementById('gridOffsetX').value) || 0,
             gridY:  parseFloat(document.getElementById('gridOffsetY').value) || 0,
             blockOpt:   document.getElementById('gsBlockOpt').checked ? 1 : 0,
@@ -4990,10 +4990,7 @@
             document.getElementById('hueText').value = state.hue;
             updateDisplay();
         }
-        // Grid
-        if (state.grid !== undefined && state.grid !== (gridVisible ? 1 : 0)) {
-            document.getElementById('toggleGrid').click();
-        }
+        // Grid offsets only (not grid on/off — that's personal preference)
         if (state.gridX !== undefined) document.getElementById('gridOffsetX').value = state.gridX;
         if (state.gridY !== undefined) document.getElementById('gridOffsetY').value = state.gridY;
         // Block opt
