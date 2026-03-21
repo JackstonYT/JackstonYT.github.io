@@ -1374,7 +1374,7 @@
 
 <div id="appShell">
 <div class="header-section">
-    <h1><img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-right:10px; image-rendering:pixelated;">Yeeps Color Converter<img src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-left:10px; image-rendering:pixelated;"></h1>
+    <h1><img id="titleImgLeft" src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-right:10px; image-rendering:pixelated;">Yeeps Color Converter<img id="titleImgRight" src="https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160" style="width:48px; height:48px; vertical-align:middle; margin-left:10px; image-rendering:pixelated;"></h1>
     <p>This was a random helpful tool i decided to make with the help of Claude</p>
 </div>
 
@@ -4201,6 +4201,53 @@
     let repeatOn      = false;
     // shuffleQueue managed by getNextShuffleIdx()
 
+    const TITLE_STATIC = 'https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160';
+    const TITLE_MUSIC_GIF = 'https://images-ext-1.discordapp.net/external/uhoJzk1HpIJjkEBd_KScIHMoqt8FXcBnO8AXfR9GbSQ/https/cdn.discordapp.com/emojis/1374168310425456720.gif?width=160&height=160';
+
+    const TITLE_SHUFFLE_IMGS = ["https://images-ext-1.discordapp.net/external/KXz4sHcYvNp7u6ScQEslBSM_2uXz3-WHqRC578c6pjg/https/cdn.discordapp.com/emojis/1410277607626506302.png?format=webp&quality=lossless&width=160&height=160", "https://images-ext-1.discordapp.net/external/XO2DN4iBOr0ZChKYV2mDXMvTXDBO4I3_-xkJypvQ0k0/https/cdn.discordapp.com/emojis/1410277699527774239.png?format=webp&quality=lossless&width=160&height=160", "https://images-ext-1.discordapp.net/external/z23z0H4ijoXNL9E-VKn-OeDSbbxjBNP53vFbsyoViRM/https/cdn.discordapp.com/emojis/1410277671891501230.png?format=webp&quality=lossless&width=160&height=160"];
+    let _titleShuffleTimer = null;
+    let _titleShuffleIdx = 0;
+
+    function startTitleShuffle() {
+        if (_titleShuffleTimer) return;
+        _titleShuffleTimer = setInterval(() => {
+            if (document.documentElement.getAttribute('data-animations') === 'off') return;
+            _titleShuffleIdx = (_titleShuffleIdx + 1) % TITLE_SHUFFLE_IMGS.length;
+            const src = TITLE_SHUFFLE_IMGS[_titleShuffleIdx];
+            const left  = document.getElementById('titleImgLeft');
+            const right = document.getElementById('titleImgRight');
+            // Swap src without touching the element so CSS animation continues uninterrupted
+            if (left)  left.src  = src;
+            if (right) right.src = src;
+        }, 1000);
+    }
+
+    function stopTitleShuffle() {
+        if (_titleShuffleTimer) { clearInterval(_titleShuffleTimer); _titleShuffleTimer = null; }
+    }
+
+    function updateTitleImgs(playing) {
+        const animOff = document.documentElement.getAttribute('data-animations') === 'off';
+        const left  = document.getElementById('titleImgLeft');
+        const right = document.getElementById('titleImgRight');
+        if (!left || !right) return;
+        if (playing && !animOff) {
+            // Music playing — stop shuffle, show music gif
+            stopTitleShuffle();
+            left.src  = TITLE_MUSIC_GIF + '&t=' + Date.now();
+            right.src = TITLE_MUSIC_GIF + '&t=' + Date.now();
+        } else {
+            // Music off — start colour shuffle
+            if (!animOff) {
+                startTitleShuffle();
+            } else {
+                stopTitleShuffle();
+                left.src  = TITLE_STATIC;
+                right.src = TITLE_STATIC;
+            }
+        }
+    }
+
     function updateNowPlayingWidget(playing) {
         const trackEl  = document.getElementById('nowPlayingTrack');
         const artistEl = document.getElementById('nowPlayingArtist');
@@ -4216,6 +4263,7 @@
             if (artistEl) artistEl.textContent = '';
             if (!musicEnabled) nowPlayingWidget.classList.remove('active');
         }
+        updateTitleImgs(playing && musicEnabled);
     }
 
     function loadTrack(idx, autoplay) {
@@ -4441,6 +4489,7 @@
     loadMusicPrefs();
     updateMusicUI();
     renderTrackList();
+    updateTitleImgs(musicPlaying && musicEnabled);
 
 
     
