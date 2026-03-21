@@ -5449,8 +5449,60 @@
         return id;
     }
 
+    // Simple hash of encoded string for deduplication
+    async function hashEncoded(str) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,32);
+    }
+
+    // Rate limit: max 5 shares per 10 minutes per browser fingerprint
+    const RL_MAX = 5, RL_WINDOW_MS = 10 * 60 * 1000;
+    function getRlKey() {
+        let k = localStorage.getItem('yeeps_rl_fp');
+        if (!k) { k = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('yeeps_rl_fp', k); }
+        return k;
+    }
+    function checkRateLimit() {
+        const key = 'yeeps_rl_' + getRlKey();
+        let data = JSON.parse(localStorage.getItem(key) || '{"count":0,"start":0}');
+        const now = Date.now();
+        if (now - data.start > RL_WINDOW_MS) data = { count: 0, start: now };
+        if (data.count >= RL_MAX) {
+            const wait = Math.ceil((RL_WINDOW_MS - (now - data.start)) / 60000);
+            throw new Error('Rate limited — try again in ' + wait + ' minute' + (wait !== 1 ? 's' : ''));
+        }
+        data.count++;
+        localStorage.setItem(key, JSON.stringify(data));
+    }
 
     async function storeShare(encoded) {
+        const hash = await hashEncoded(encoded);
+
+        // Deduplication: check if identical project already exists
+        const dupRes = await fetch(SB_URL + '/rest/v1/shares?hash=eq.' + hash + '&select=id', {
+            headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+        });
+        if (dupRes.ok) {
+            const rows = await dupRes.json();
+            if (rows && rows.length > 0) {
+                // Found matching hash — update last_accessed and reuse the ID
+                const existingId = rows[0].id;
+                await fetch(SB_URL + '/rest/v1/shares?id=eq.' + existingId, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SB_KEY,
+                        'Authorization': 'Bearer ' + SB_KEY
+                    },
+                    body: JSON.stringify({ last_accessed: new Date().toISOString() })
+                });
+                return { id: existingId, reused: true };
+            }
+        }
+
+        // New share — check rate limit before inserting
+        checkRateLimit();
+
         for (let attempt = 0; attempt < 3; attempt++) {
             const id = genShareId();
             const res = await fetch(SB_URL + '/rest/v1/shares', {
@@ -5461,24 +5513,32 @@
                     'Authorization': 'Bearer ' + SB_KEY,
                     'Prefer': 'return=minimal'
                 },
-                body: JSON.stringify({ id, data: encoded })
+                body: JSON.stringify({ id, data: encoded, hash, last_accessed: new Date().toISOString() })
             });
-            if (res.ok || res.status === 201) return id;
+            if (res.ok || res.status === 201) return { id, reused: false };
             if (res.status !== 409) throw new Error('Server error ' + res.status);
         }
         throw new Error('Could not generate unique ID');
     }
 
     async function fetchShare(id) {
-        const res = await fetch(SB_URL + '/rest/v1/shares?id=eq.' + id + '&select=data', {
+        // Update last_accessed when someone opens the link
+        fetch(SB_URL + '/rest/v1/shares?id=eq.' + id, {
+            method: 'PATCH',
             headers: {
+                'Content-Type': 'application/json',
                 'apikey': SB_KEY,
                 'Authorization': 'Bearer ' + SB_KEY
-            }
+            },
+            body: JSON.stringify({ last_accessed: new Date().toISOString() })
+        }).catch(() => {});
+
+        const res = await fetch(SB_URL + '/rest/v1/shares?id=eq.' + id + '&select=data', {
+            headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
         });
         if (!res.ok) throw new Error('Network error ' + res.status);
         const rows = await res.json();
-        if (!rows || rows.length === 0) throw new Error('Share not found — it may have expired.');
+        if (!rows || rows.length === 0) throw new Error('Share not found — it may have expired after 14 days of inactivity.');
         return rows[0].data;
     }
 
@@ -5495,14 +5555,16 @@
         try {
             const state   = getShareState();
             const encoded = encodeShareState(state);
-            statusEl.textContent = 'Uploading to server...';
-            const id   = await storeShare(encoded);
+            statusEl.textContent = 'Checking for existing link...';
+            const { id, reused } = await storeShare(encoded);
             const link = window.location.origin + window.location.pathname + '#s/' + id;
             urlEl.value = link;
-            statusEl.textContent = 'Link ready! Anyone with this link can open your project.';
+            statusEl.textContent = reused
+                ? '♻️ Same project already shared — reusing existing link!'
+                : '✅ Link ready! Expires after 14 days of inactivity.';
             statusEl.style.color = 'var(--accent)';
         } catch(e) {
-            statusEl.textContent = 'Failed: ' + e.message;
+            statusEl.textContent = '❌ ' + e.message;
             statusEl.style.color = '#e05555';
         } finally {
             btn.textContent = '🔗 Share Project Link'; btn.disabled = false;
