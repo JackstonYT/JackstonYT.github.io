@@ -3303,7 +3303,7 @@
 
     // Scroll wheel: pan (shift/ctrl = zoom)
     document.getElementById('frame').addEventListener('wheel', (e) => {
-        if (!img) return;
+        if (!img && !mappedPixels) return;
         e.preventDefault();
         if (e.ctrlKey || e.metaKey || e.shiftKey) {
             const delta = e.deltaY < 0 ? 50 : -50;
@@ -3320,7 +3320,7 @@
 
     // Mouse drag
     frameEl.addEventListener('mousedown', (e) => {
-        if (!img || inspectMode) return;
+        if ((!img && !mappedPixels) || inspectMode) return;
         isDragging = true;
         frameEl.classList.add('grabbing');
         e.preventDefault();
