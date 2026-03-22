@@ -1380,7 +1380,7 @@
 
 
 <!-- Find Optimal Settings Modal -->
-<div id="findOptimalModal" class="modal-backdrop" style="z-index:9100;">
+<div id="findOptimalModal" class="modal-backdrop" style="z-index:9300;">
     <div class="modal-box" style="background:var(--bg2);border:2px solid var(--border2);border-radius:14px;padding:22px;width:min(500px,95vw);max-height:92vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
         <div style="display:flex;align-items:center;justify-content:space-between;">
             <h3 style="margin:0;font-size:1rem;color:var(--text);">🔬 Find Optimal Settings</h3>
@@ -1669,6 +1669,24 @@
     </div>
 </div>
 
+
+<!-- Block Opt Settings Modal -->
+<div id="blockOptSettingsModal" class="modal-backdrop" style="z-index:9100;">
+    <div class="modal-box" style="background:var(--bg2);border:2px solid var(--border2);border-radius:14px;padding:22px;width:min(360px,94vw);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:1rem;color:var(--text);">🧱 Block Optimization Settings</h3>
+            <button id="blockOptSettingsClose" style="background:var(--btn-sec);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text);font-family:inherit;">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+            <button id="gsMaxOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:inherit;">⚡ Max Optimization (enable all blocks)</button>
+            <button id="gsChooseBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🧱 Choose Blocks!</button>
+            <button id="gsUniqueBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">⭐ Unique Blocks</button>
+            <button id="gsMoreOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🔀 More Optimization</button>
+            <button id="gsFindOptimalBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🔬 Find Optimal Settings</button>
+        </div>
+    </div>
+</div>
+
 <div id="toast"></div>
 <div id="dropOverlay">📂 Drop image here</div>
 
@@ -1746,8 +1764,7 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <button id="toggleGrid" class="secondary" style="flex:1; font-size:0.9rem; min-width:90px;">Grid: OFF</button>
-                    <button id="gridGearBtn" class="secondary" style="font-size:1rem; padding:6px 10px;" title="Grid Settings">⚙️</button>
-                    <span style="font-size:0.68rem; color:var(--text2); flex-shrink:0; line-height:1.2;">Block opt<br>in here!</span>
+                    <button id="gridGearBtn" class="secondary" style="font-size:1rem; padding:6px 10px;" title="Grid Settings (color match, dither, save grid)">⚙️</button>
                     <label style="font-size:0.8rem; white-space:nowrap; flex-shrink:0;">X:
                         <input type="number" id="gridOffsetX" value="0" step="0.05" class="num-input" style="width:52px;">
                     </label>
@@ -1755,6 +1772,14 @@
                         <input type="number" id="gridOffsetY" value="0" step="0.05" class="num-input" style="width:52px;">
                     </label>
                 </div>
+                <!-- Block Optimization row — standalone below grid -->
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <button id="blockOptToggleBtn" class="secondary" style="flex:1; font-size:0.9rem; padding:7px 10px;">🧱 Block Opt: OFF</button>
+                    <button id="blockOptSettingsBtn" class="secondary" style="font-size:1rem; padding:6px 10px; display:none;" title="Block Optimization Settings">⚙️</button>
+                </div>
+                <div style="font-size:0.68rem; color:var(--text3); margin-top:-2px; padding-left:2px;">(limits use of yeeps blocks!)</div>
+                <!-- Scale to block limit -->
+                <button id="scaleToLimitBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">📐 Scale to Block Limit (6000)</button>
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <div id="selectionStatus" style="flex:1;">
                         <div id="paintSelected">Click a pixel in Inspect mode</div>
@@ -1916,18 +1941,9 @@
 
         <!-- General tab -->
         <div class="gs-tabpanel" id="gsTabGeneral">
-            <div class="gs-row">
-                <label><input type="checkbox" id="gsBlockOpt"> Block Optimization</label>
-                <div class="gs-desc">Draws grid boundaries around optimized Yeeps block placements. Uses the largest valid block for each same-color region.</div>
-                <!-- Sub-buttons that appear when block opt is on -->
-                <div id="gsBlockOptSub" style="display:none; flex-direction:column; gap:6px; margin-top:6px;">
-                    <button id="gsMaxOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:inherit;">⚡ Max Optimization (enable all blocks)</button>
-                    <button id="gsChooseBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🧱 Choose Blocks!</button>
-                    <button id="gsUniqueBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">⭐ Unique Blocks</button>
-                    <button id="gsMoreOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🔀 More Optimization</button>
-                    <button id="gsFindOptimalBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🔬 Find Optimal Settings</button>
-                </div>
-            </div>
+            <!-- gsBlockOpt hidden checkbox — kept for JS compatibility -->
+            <input type="checkbox" id="gsBlockOpt" style="display:none;">
+            <div id="gsBlockOptSub" style="display:none;"></div>
             <div class="gs-row">
                 <label><input type="checkbox" id="gsSaveGrid" checked> Save Grid with PNG (Big only)</label>
                 <div class="gs-desc">When downloading, bakes the current grid overlay into the exported PNG.</div>
@@ -1960,68 +1976,67 @@
 
         <button id="gridSettingsClose" style="background:var(--btn-sec); margin-top:4px;">Done</button>
 
-        <!-- Choose Blocks sub-modal -->
-        <div id="chooseBlocksModal" class="modal-backdrop" style="z-index:8000;">
-            <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); max-height:85vh; display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <h3 style="margin:0; font-size:1rem; color:var(--text);">🧱 Choose Blocks</h3>
-                    <button id="chooseBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
-                </div>
-                <div class="gs-desc">Toggle off blocks you don't own. Disabled blocks are skipped during optimization.</div>
-                <div id="gsBlockToggles" style="overflow-y:auto; flex:1;"></div>
-            </div>
-        </div>
+    </div>
+</div>
 
-        <!-- Unique Blocks sub-modal -->
-        <div id="uniqueBlocksModal" class="modal-backdrop" style="z-index:8000;">
-            <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(360px,90vw); display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <h3 style="margin:0; font-size:1rem; color:var(--text);">⭐ Unique Blocks</h3>
-                    <button id="uniqueBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
-                </div>
-                <div class="gs-desc">Toggle which unique blocks to include in optimization.</div>
-                <div id="gsUniquePanel">
-                    <div class="gs-unique-row" id="uniqRow_16x16">
-                        <label><input type="checkbox" id="uniq_16x16"> Build Plate (16×16)</label>
-                    </div>
-                    <div class="gs-unique-row" id="uniqRow_3x2">
-                        <label><input type="checkbox" id="uniq_3x2"> Vending Machine (3×2)</label>
-                    </div>
-                    <div class="gs-unique-row" id="uniqRow_3x6">
-                        <label><input type="checkbox" id="uniq_3x6"> Horror Table (3×6) <span style="color:#e05555; font-size:0.72rem; margin-left:4px;">(ONLY MAROON)</span></label>
-                    </div>
-                </div>
-                <button id="uniqueBlocksDone" style="background:var(--accent); border:none; border-radius:6px; padding:8px; cursor:pointer; color:#fff; font-family:inherit;">Done</button>
-            </div>
+<!-- Choose Blocks modal (top-level, z-index above blockOptSettingsModal) -->
+<div id="chooseBlocksModal" class="modal-backdrop" style="z-index:9200;">
+    <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); max-height:85vh; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="margin:0; font-size:1rem; color:var(--text);">🧱 Choose Blocks</h3>
+            <button id="chooseBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
         </div>
+        <div class="gs-desc">Toggle off blocks you don't own. Disabled blocks are skipped during optimization.</div>
+        <div id="gsBlockToggles" style="overflow-y:auto; flex:1;"></div>
+    </div>
+</div>
 
-        <!-- More Optimization sub-modal (sideways blocks) -->
-        <div id="moreOptModal" class="modal-backdrop" style="z-index:8000;">
-            <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); display:flex; flex-direction:column; gap:10px;">
-                <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <h3 style="margin:0; font-size:1rem; color:var(--text);">🔀 More Optimization</h3>
-                    <button id="moreOptClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
-                </div>
-                <div class="gs-desc">Sideways block variants. Each requires its base block to be enabled in Choose Blocks first.</div>
-                <div id="moreOptToggles" style="display:flex; flex-direction:column; gap:6px;">
-                    <!-- 1x16 sideways — depends on 2x16 -->
-                    <div class="gs-block-toggle-row" id="moreOptRow_1x16">
-                        <label style="display:flex;align-items:center;gap:7px;font-size:0.88rem;cursor:pointer;">
-                            <input type="checkbox" id="moreOptCb_1x16"> Wood Block (1×16) <span style="font-size:0.72rem;color:var(--text3);">— needs 2×16 enabled</span>
-                        </label>
-                        <div class="gs-sideways-warn" id="moreOptWarn_1x16">Enable 2×16 Wood Block in Choose Blocks first!</div>
-                    </div>
-                    <!-- 1x3 sideways vending — depends on 3x2 unique being enabled -->
-                    <div class="gs-block-toggle-row" id="moreOptRow_1x3">
-                        <label style="display:flex;align-items:center;gap:7px;font-size:0.88rem;cursor:pointer;">
-                            <input type="checkbox" id="uniq_1x3"> Sideways Vending Machine (1×3) <span style="font-size:0.72rem;color:var(--text3);">— needs Vending Machine enabled</span>
-                        </label>
-                        <div class="gs-sideways-warn" id="moreOptWarn_1x3">Enable Vending Machine in Unique Blocks first!</div>
-                    </div>
-                </div>
-                <button id="moreOptDone" style="background:var(--accent); border:none; border-radius:6px; padding:8px; cursor:pointer; color:#fff; font-family:inherit;">Done</button>
+<!-- Unique Blocks modal (top-level) -->
+<div id="uniqueBlocksModal" class="modal-backdrop" style="z-index:9200;">
+    <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(360px,90vw); display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="margin:0; font-size:1rem; color:var(--text);">⭐ Unique Blocks</h3>
+            <button id="uniqueBlocksClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
+        </div>
+        <div class="gs-desc">Toggle which unique blocks to include in optimization.</div>
+        <div id="gsUniquePanel">
+            <div class="gs-unique-row" id="uniqRow_16x16">
+                <label><input type="checkbox" id="uniq_16x16"> Build Plate (16×16)</label>
+            </div>
+            <div class="gs-unique-row" id="uniqRow_3x2">
+                <label><input type="checkbox" id="uniq_3x2"> Vending Machine (3×2)</label>
+            </div>
+            <div class="gs-unique-row" id="uniqRow_3x6">
+                <label><input type="checkbox" id="uniq_3x6"> Horror Table (3×6) <span style="color:#e05555; font-size:0.72rem; margin-left:4px;">(ONLY MAROON)</span></label>
             </div>
         </div>
+        <button id="uniqueBlocksDone" style="background:var(--accent); border:none; border-radius:6px; padding:8px; cursor:pointer; color:#fff; font-family:inherit;">Done</button>
+    </div>
+</div>
+
+<!-- More Optimization modal (top-level) -->
+<div id="moreOptModal" class="modal-backdrop" style="z-index:9200;">
+    <div class="gs-sub-modal-box" style="background:var(--bg2); border:2px solid var(--border2); border-radius:12px; padding:20px; width:min(380px,90vw); display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="margin:0; font-size:1rem; color:var(--text);">🔀 More Optimization</h3>
+            <button id="moreOptClose" style="background:var(--btn-sec); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--text); font-family:inherit;">✕</button>
+        </div>
+        <div class="gs-desc">Sideways block variants. Each requires its base block to be enabled in Choose Blocks first.</div>
+        <div id="moreOptToggles" style="display:flex; flex-direction:column; gap:6px;">
+            <div class="gs-block-toggle-row" id="moreOptRow_1x16">
+                <label style="display:flex;align-items:center;gap:7px;font-size:0.88rem;cursor:pointer;">
+                    <input type="checkbox" id="moreOptCb_1x16"> Wood Block (1×16) <span style="font-size:0.72rem;color:var(--text3);">— needs 2×16 enabled</span>
+                </label>
+                <div class="gs-sideways-warn" id="moreOptWarn_1x16">Enable 2×16 Wood Block in Choose Blocks first!</div>
+            </div>
+            <div class="gs-block-toggle-row" id="moreOptRow_1x3">
+                <label style="display:flex;align-items:center;gap:7px;font-size:0.88rem;cursor:pointer;">
+                    <input type="checkbox" id="uniq_1x3"> Sideways Vending Machine (1×3) <span style="font-size:0.72rem;color:var(--text3);">— needs Vending Machine enabled</span>
+                </label>
+                <div class="gs-sideways-warn" id="moreOptWarn_1x3">Enable Vending Machine in Unique Blocks first!</div>
+            </div>
+        </div>
+        <button id="moreOptDone" style="background:var(--accent); border:none; border-radius:6px; padding:8px; cursor:pointer; color:#fff; font-family:inherit;">Done</button>
     </div>
 </div>
 
@@ -2828,6 +2843,17 @@
         const totalPaints = palette.filter((_, i) => currentCounts[i] > 0).length;
         document.getElementById('totalPaintsCount').textContent = totalPaints.toLocaleString();
 
+        const blockOptOn = document.getElementById('gsBlockOpt') && document.getElementById('gsBlockOpt').checked;
+        if (!blockOptOn) {
+            // Without optimization: total blocks = total non-transparent pixels
+            const total = mappedPixels.colors.filter(c => c !== null).length;
+            document.getElementById('totalBlocksCount').textContent = total.toLocaleString();
+            // Still update block list tab
+            const listEl = document.getElementById('gsBlockList');
+            if (listEl) listEl.innerHTML = '<div style="color:#555;font-size:0.8rem;padding:6px 0;">Enable block optimization to see block breakdown.</div>';
+            return;
+        }
+
         const result = getBlockGridResult();
         if (!result) return;
         const { blockCounts } = result;
@@ -3342,15 +3368,15 @@
             closeModal(document.getElementById('gridSettingsModal'));
     });
     function updateGearIndicator() {
-        const on = document.getElementById('gsBlockOpt').checked;
         const btn = document.getElementById('gridGearBtn');
-        btn.textContent = on ? '⚙️●' : '⚙️';
-        btn.style.color = on ? 'var(--coin-txt)' : '';
-        btn.title = on ? 'Grid Settings (Block Optimization ON)' : 'Grid Settings';
+        btn.textContent = '⚙️';
+        btn.style.color = '';
+        btn.title = 'Grid Settings';
     }
     document.getElementById('gsBlockOpt').addEventListener('change', () => {
         blockGridFor = null;
         renderCanvas();
+        updateCounters();
         updateGearIndicator();
         updateMoreOptDeps();
         const on = document.getElementById('gsBlockOpt').checked;
@@ -6244,6 +6270,7 @@
         paintMode = on;
         if (on && inspectMode) setInspectMode(false);
         document.body.classList.toggle('paint-mode', on);
+        if (typeof updateModeBtns === 'function') updateModeBtns();
 
         const btn = document.getElementById('paintModeToggle');
         if (btn) {
@@ -6485,6 +6512,7 @@
         img = null;
         freePaintMode = true;
         document.body.classList.add('free-paint-mode');
+        if (typeof updateModeBtns === 'function') updateModeBtns();
         UNDO_STACK.length = 0;
         REDO_STACK.length = 0;
         _paintScaleLocked = false;
@@ -6534,6 +6562,7 @@
     function exitFreePaintMode() {
         freePaintMode = false;
         document.body.classList.remove('free-paint-mode');
+        if (typeof updateModeBtns === 'function') updateModeBtns();
         const scaleRowEl = document.getElementById('scaleRow');
         if (scaleRowEl) scaleRowEl.style.display = '';
         const hueGroup = document.getElementById('hueSlider')?.closest('.input-group');
@@ -6734,6 +6763,112 @@
         setPaintMode(false);
         _origLoadImageFile(file);
     };
+
+
+    // ── Block Opt Toggle Button ───────────────────────────────────────────────
+    function syncBlockOptToggleBtn() {
+        const on = document.getElementById('gsBlockOpt').checked;
+        const btn = document.getElementById('blockOptToggleBtn');
+        const settingsBtn = document.getElementById('blockOptSettingsBtn');
+        if (btn) {
+            btn.textContent = on ? '🧱 Block Opt: ON' : '🧱 Block Opt: OFF';
+            btn.style.background = on ? 'var(--accent)' : '';
+            btn.style.color = on ? '#fff' : '';
+        }
+        if (settingsBtn) settingsBtn.style.display = on ? '' : 'none';
+    }
+
+    document.getElementById('blockOptToggleBtn').addEventListener('click', () => {
+        if (paintMode) { showToast('Block Opt unavailable in paint mode', 'info'); return; }
+        const cb = document.getElementById('gsBlockOpt');
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event('change'));
+        syncBlockOptToggleBtn();
+    });
+
+    document.getElementById('blockOptSettingsBtn').addEventListener('click', () => {
+        openModal(document.getElementById('blockOptSettingsModal'));
+    });
+    document.getElementById('blockOptSettingsClose').onclick = () => closeModal(document.getElementById('blockOptSettingsModal'));
+    document.getElementById('blockOptSettingsModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('blockOptSettingsModal')) closeModal(document.getElementById('blockOptSettingsModal'));
+    });
+
+    // Sync on gsBlockOpt change
+    document.getElementById('gsBlockOpt').addEventListener('change', syncBlockOptToggleBtn);
+    syncBlockOptToggleBtn();
+
+    // ── Scale to Block Limit ─────────────────────────────────────────────────
+    document.getElementById('scaleToLimitBtn').addEventListener('click', () => {
+        if (!mappedPixels || !img) { showToast('Load an image first', 'info'); return; }
+        if (paintMode || freePaintMode) { showToast('Unavailable in paint/free paint mode', 'info'); return; }
+
+        const LIMIT = 6000;
+        const btn = document.getElementById('scaleToLimitBtn');
+        btn.disabled = true; btn.textContent = '⏳ Searching...';
+
+        // Try scales from current down to 1 until block count <= 6000
+        const currentScale = parseInt(resSlider.value);
+        let found = false;
+
+        function tryScale(s) {
+            if (s < 1) {
+                showToast('Cannot fit under 6000 blocks at any scale', 'info');
+                btn.disabled = false; btn.textContent = '📐 Scale to Block Limit (6000)';
+                return;
+            }
+            // Temporarily set scale and reprocess
+            resSlider.value = s;
+            resText.value = s;
+            // Compute mappedPixels for this scale without rendering
+            const w = Math.min(256, Math.max(1, s));
+            const h = Math.round(w * (img.height / img.width));
+            // Run block opt on a quick estimate
+            // Use current block opt settings
+            const blockOptOn = document.getElementById('gsBlockOpt').checked;
+            let blockCount;
+            if (blockOptOn) {
+                updateDisplay(); // reprocess at new scale
+                setTimeout(() => {
+                    const result = getBlockGridResult();
+                    blockCount = result ? Object.values(result.blockCounts).reduce((a,b)=>a+b,0) : w*h;
+                    if (blockCount <= LIMIT) {
+                        showToast(`✅ Scale set to ${s}px — ${blockCount.toLocaleString()} blocks`, 'info');
+                        btn.disabled = false; btn.textContent = '📐 Scale to Block Limit (6000)';
+                        found = true;
+                    } else {
+                        tryScale(s - 1);
+                    }
+                }, 50);
+            } else {
+                // No block opt — each pixel = 1 block
+                blockCount = w * h;
+                if (blockCount <= LIMIT) {
+                    updateDisplay();
+                    showToast(`✅ Scale set to ${s}px — ${blockCount.toLocaleString()} pixels`, 'info');
+                    btn.disabled = false; btn.textContent = '📐 Scale to Block Limit (6000)';
+                } else {
+                    tryScale(s - 1);
+                }
+            }
+        }
+
+        tryScale(currentScale);
+    });
+
+    // Disable scale to limit + block opt in paint/free paint mode
+    function updateModeBtns() {
+        const s2l = document.getElementById('scaleToLimitBtn');
+        const bot = document.getElementById('blockOptToggleBtn');
+        const bos = document.getElementById('blockOptSettingsBtn');
+        // Scale to limit: disabled in both paint and free paint (no scale slider)
+        const s2lDisabled = paintMode || freePaintMode;
+        if (s2l) { s2l.disabled = s2lDisabled; s2l.style.opacity = s2lDisabled ? '0.4' : ''; }
+        // Block opt: disabled only in paint mode — free paint mode can use it
+        const blockDisabled = paintMode && !freePaintMode;
+        if (bot) { bot.disabled = blockDisabled; bot.style.opacity = blockDisabled ? '0.4' : ''; }
+        if (bos) { bos.disabled = blockDisabled; bos.style.opacity = blockDisabled ? '0.4' : ''; }
+    }
 
     initMasterList();
     // Master paints search filter
