@@ -4983,10 +4983,9 @@
             dither:     document.getElementById('gsDither').value,
             saveGrid:   document.getElementById('gsSaveGrid').checked ? 1 : 0,
             blocks:     blockStates,
-            // Active palette colors (which ones are toggled on)
             palette: palette.map(c => c.active ? 1 : 0),
-            // Colors used in image (hex list of paints with count > 0)
             used: currentCounts.map((cnt, i) => cnt > 0 ? palette[i].hex : null).filter(Boolean),
+            freePaint: freePaintMode ? 1 : 0,
         };
         // Pixel data is encoded directly in encodeShareState from mappedPixels
         // Nothing to pre-compute here
@@ -5094,7 +5093,25 @@
                 }
             });
 
-            // ── Trigger the full "image loaded" UI state ──────────────────────
+            if (state.freePaint) {
+                // ── Free paint mode ────────────────────────────────────────────
+                // Use createBlankCanvas to set up the UI, then overwrite mappedPixels
+                createBlankCanvas(pw, ph);
+                // createBlankCanvas resets mappedPixels to blank — restore shared pixels
+                mappedPixels = { colors, w: pw, h: ph };
+                currentCounts = new Array(palette.length).fill(0);
+                colors.forEach(c => {
+                    if (c) {
+                        const i = palette.findIndex(p => p.hex === c.hex);
+                        if (i >= 0) currentCounts[i]++;
+                    }
+                });
+                renderCanvas();
+                renderStats();
+                updateCounters();
+                updateUndoRedoBtns();
+            } else {
+            // ── Normal image mode ──────────────────────────────────────────────
             // 1. Mark body
             document.body.classList.add('image-loaded');
 
@@ -5130,6 +5147,7 @@
 
             // 10. Fit canvas to view
             if (typeof fitToView === 'function') setTimeout(fitToView, 50);
+            } // end else (normal image mode)
         } else {
             renderCanvas();
             updateCounters();
