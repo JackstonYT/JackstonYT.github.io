@@ -224,6 +224,7 @@
         }
 
         #canvasContainer { display: inline-block; line-height: 0; position: absolute; }
+        body.free-paint-mode #canvasContainer { outline: 2px solid var(--accent); outline-offset: 1px; }
         /* Frame is the positioning parent; canvasContainer is positioned by JS */
         #overlayCanvas { position: absolute; top: 0; left: 0; z-index: 3; pointer-events: none; image-rendering: pixelated; }
         #mainCanvas { position: relative; z-index: 2; cursor: crosshair; }
@@ -1239,6 +1240,28 @@
             .viewer-section { width: 220px !important; }
             .palette-section { width: 240px !important; }
         }
+
+        /* Paint mode */
+        #paintModeToggle.active-paint { background: var(--accent); color: #fff; }
+        .paint-swatch {
+            width: 20px; height: 20px; border-radius: 4px; cursor: pointer;
+            border: 2px solid transparent; transition: 0.1s; flex-shrink: 0;
+        }
+        .paint-swatch:hover { transform: scale(1.2); }
+        .paint-swatch.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+        .paint-swatch.transparent-swatch {
+            background: repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 0 0 / 10px 10px;
+        }
+        body.paint-mode #frame, body.paint-mode #mobFrame { cursor: crosshair !important; }
+        #mobPaintModeBtn.active-paint { background: var(--accent); color: #fff; border-color: var(--accent); }
+        #mobPaintModeBtn.active-paint .mob-btn-label { color: rgba(255,255,255,0.8); }
+        /* Mobile paint picker */
+        #mobPaintPicker {
+            display: none; flex-direction: column; gap: 6px;
+            padding: 8px; background: var(--bg3); border-radius: 8px;
+            border: 1px solid var(--border2); margin: 6px 0;
+        }
+        #mobPaintPicker.visible { display: flex; }
     </style>
 </head>
 <body>
@@ -1430,6 +1453,7 @@
         <button class="mob-icon-btn" id="mobGridBtn" title="Toggle grid">▦<span class="mob-btn-label">Grid</span></button>
         <button class="mob-icon-btn" id="mobGearBtn" title="Grid settings / Block opt">⚙️<span class="mob-btn-label">Settings</span></button>
         <button class="mob-icon-btn" id="mobInspectBtn" title="Inspect mode">🔍<span class="mob-btn-label">Inspect</span></button>
+        <button class="mob-icon-btn" id="mobPaintModeBtn" title="Paint mode">🖊<span class="mob-btn-label">Paint</span></button>
         <button class="mob-icon-btn" id="mobDownSmallBtn" title="Download Small">⬇<span class="mob-btn-label">Small</span></button>
         <button class="mob-icon-btn" id="mobDownBigBtn" title="Download Big">⬇<span class="mob-btn-label">Big</span></button>
         <button class="mob-icon-btn" id="mobExportBtn" title="Export .yeepscolor">💾<span class="mob-btn-label">Export</span></button>
@@ -1517,6 +1541,21 @@
                     <input type="number" id="mobGridY" class="mob-num-input" value="0" step="0.05">
                 </div>
                 <div id="mobSelectionStatus" style="font-size:0.78rem;color:var(--text2);min-height:1.5em;"></div>
+                <!-- Mobile paint picker -->
+                <div id="mobPaintPicker">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;color:var(--text2);">
+                        <span>Color: <span id="mobPaintColorName" style="color:var(--accent);font-weight:bold;">—</span></span>
+                        <div style="display:flex;gap:4px;">
+                            <button id="mobPaintUndoBtn" class="secondary" style="font-size:0.7rem;padding:3px 7px;" title="Undo">↩</button>
+                            <button id="mobPaintRedoBtn" class="secondary" style="font-size:0.7rem;padding:3px 7px;" title="Redo">↪</button>
+                        </div>
+                    </div>
+                    <div id="mobPaintSwatches" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text2);cursor:pointer;">
+                        <input type="checkbox" id="mobPaintEraseCb" style="accent-color:var(--accent);">
+                        🗑 Erase (transparent)
+                    </label>
+                </div>
                 <button id="mobFitViewBtn" class="secondary" style="width:100%;padding:8px;">⤢ Fit to View</button>
                 <button id="mobResetZoomBtn" class="secondary" style="width:100%;padding:8px;">↺ Reset Zoom</button>
             </div>
@@ -1600,6 +1639,36 @@
     </div><!-- end mobSheet -->
 </div><!-- end mobApp -->
 
+
+<!-- New Canvas Modal -->
+<div id="newCanvasModal" class="modal-backdrop" style="z-index:9300;">
+    <div class="modal-box" style="background:var(--bg2);border:2px solid var(--border2);border-radius:14px;padding:22px;width:min(380px,94vw);display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:1rem;color:var(--text);">🎨 New Canvas</h3>
+            <button id="newCanvasClose" style="background:var(--btn-sec);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text);font-family:inherit;">✕</button>
+        </div>
+        <div style="font-size:0.78rem;color:var(--text2);">Choose your canvas size (in Yeeps pixels)</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text);">
+            <label style="display:flex;flex-direction:column;gap:4px;flex:1;">
+                Width
+                <input type="number" id="newCanvasW" value="32" min="1" max="256" style="padding:7px;border-radius:6px;border:1px solid var(--border2);background:var(--input-bg);color:var(--text);font-family:inherit;font-size:0.9rem;text-align:center;">
+            </label>
+            <span style="margin-top:20px;font-size:1.2rem;color:var(--text3);">×</span>
+            <label style="display:flex;flex-direction:column;gap:4px;flex:1;">
+                Height
+                <input type="number" id="newCanvasH" value="32" min="1" max="256" style="padding:7px;border-radius:6px;border:1px solid var(--border2);background:var(--input-bg);color:var(--text);font-family:inherit;font-size:0.9rem;text-align:center;">
+            </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="secondary" style="flex:1;font-size:0.75rem;padding:6px;" onclick="document.getElementById('newCanvasW').value=16;document.getElementById('newCanvasH').value=16;">16×16</button>
+            <button class="secondary" style="flex:1;font-size:0.75rem;padding:6px;" onclick="document.getElementById('newCanvasW').value=32;document.getElementById('newCanvasH').value=32;">32×32</button>
+            <button class="secondary" style="flex:1;font-size:0.75rem;padding:6px;" onclick="document.getElementById('newCanvasW').value=64;document.getElementById('newCanvasH').value=32;">64×32</button>
+            <button class="secondary" style="flex:1;font-size:0.75rem;padding:6px;" onclick="document.getElementById('newCanvasW').value=64;document.getElementById('newCanvasH').value=64;">64×64</button>
+        </div>
+        <button id="newCanvasCreate" style="background:var(--accent);border:none;border-radius:8px;padding:11px;color:#fff;font-family:inherit;font-size:0.9rem;cursor:pointer;">🎨 Create Canvas</button>
+    </div>
+</div>
+
 <div id="toast"></div>
 <div id="dropOverlay">📂 Drop image here</div>
 
@@ -1630,6 +1699,7 @@
                     📂 Import .yeepscolor file
                     <input type="file" id="importFileInput" accept=".yeepscolor" style="display:none;">
                 </label>
+                <button id="newCanvasBtn" style="width:100%;margin-top:6px;padding:8px;border-radius:7px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:0.15s;">🎨 Or make new!</button>
                 <div id="removeBgArea">
                     <label id="removeBgLabel" style="display:flex;align-items:center;gap:6px;font-size:0.76rem;color:var(--text2);cursor:pointer;">
                         <input type="checkbox" id="removeBgToggle" style="accent-color:var(--accent);"> Remove background
@@ -1648,23 +1718,21 @@
             </div>
 
             <div id="dynamicControls">
-                <div class="control-row">
-                    <div class="input-group">
-                        <div style="display:flex; align-items:center; gap:5px; font-size:0.8rem;">
-                            <span>Scale:</span>
-                            <input type="text" id="resText" class="num-input" value="256">
-                            <span>px</span>
-                        </div>
-                        <input type="range" id="resSlider" min="1" max="256" value="256">
+                <div id="scaleRow" class="input-group">
+                    <div style="display:flex; align-items:center; gap:5px; font-size:0.8rem;">
+                        <span>Scale:</span>
+                        <input type="text" id="resText" class="num-input" value="256">
+                        <span>px</span>
                     </div>
-                    <div class="input-group">
-                        <div style="display:flex; align-items:center; gap:5px; font-size:0.8rem;">
-                            <span>Zoom:</span>
-                            <input type="text" id="zoomText" class="num-input" value="100">
-                            <span>%</span>
-                        </div>
-                        <input type="range" id="zoomSlider" min="10" max="4000" value="100">
+                    <input type="range" id="resSlider" min="1" max="256" value="256">
+                </div>
+                <div id="zoomRow" class="input-group">
+                    <div style="display:flex; align-items:center; gap:5px; font-size:0.8rem;">
+                        <span>Zoom:</span>
+                        <input type="text" id="zoomText" class="num-input" value="100">
+                        <span>%</span>
                     </div>
+                    <input type="range" id="zoomSlider" min="10" max="4000" value="100">
                 </div>
                 <div class="input-group">
                     <div style="display:flex; align-items:center; gap:6px; font-size:0.8rem;">
@@ -1692,7 +1760,22 @@
                         <div id="paintSelected">Click a pixel in Inspect mode</div>
                         <div id="blockSelected" style="display:none;"></div>
                     </div>
-                    <button id="modeToggle" class="secondary" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">🔍 Inspect: OFF<br><span style="font-size:0.65rem; opacity:0.7;">click pixels · see paint & block</span></button>
+                    <button id="modeToggle" class="secondary" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">🔍 Inspect: OFF<br><span style="font-size:0.65rem; opacity:0.7;">click pixels · see paint &amp; block</span></button>
+                    <button id="paintModeToggle" class="secondary" style="font-size:0.8rem; padding:6px 10px; white-space:nowrap;">🖊 Paint: OFF<br><span style="font-size:0.65rem; opacity:0.7;">click pixels · change color</span></button>
+                </div>
+                <div id="paintColorPicker" style="display:none; flex-direction:column; gap:6px; padding:8px; background:var(--bg3); border-radius:8px; border:1px solid var(--border2);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;color:var(--text2);">
+                        <span>Color: <span id="paintColorName" style="color:var(--accent);font-weight:bold;">—</span></span>
+                        <div style="display:flex;gap:6px;">
+                            <button id="paintUndoBtn" class="secondary" style="font-size:0.75rem;padding:3px 8px;">↩ Undo</button>
+                            <button id="paintRedoBtn" class="secondary" style="font-size:0.75rem;padding:3px 8px;">↪ Redo</button>
+                        </div>
+                    </div>
+                    <div id="paintColorSwatches" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text2);cursor:pointer;">
+                        <input type="checkbox" id="paintEraseCb" style="accent-color:var(--accent);">
+                        🗑 Erase (transparent)
+                    </label>
                 </div>
                 <div class="btn-group">
                     <button id="fitView" class="secondary">Fit to View</button>
@@ -2049,7 +2132,13 @@
             item.querySelector('input').onchange = (e) => {
                 palette[i].active = e.target.checked;
                 item.classList.toggle('off', !e.target.checked);
-                updateDisplay();
+                if (paintMode) {
+                    // In paint mode: just re-render, don't reprocess image
+                    renderCanvas(); updateCounters();
+                    if (paintMode) buildPaintSwatches(); // refresh X overlays
+                } else {
+                    updateDisplay();
+                }
             };
             masterGrid.appendChild(item);
         });
@@ -3467,9 +3556,9 @@
         }
     }, { passive: false });
 
-    // Mouse drag
+    // Mouse drag — skip if paint mode or inspect mode active
     frameEl.addEventListener('mousedown', (e) => {
-        if ((!img && !mappedPixels) || inspectMode) return;
+        if ((!img && !mappedPixels) || inspectMode || paintMode) return;
         isDragging = true;
         frameEl.classList.add('grabbing');
         e.preventDefault();
@@ -5751,11 +5840,11 @@
     });
 
     // ── Canvas touch/drag in mobFrame ─────────────────────────────
-    const mobFrameEl = document.getElementById('mobFrame');
+    const mobFrameElPaint = document.getElementById('mobFrame');
     let mobDragging = false, mobLastX = 0, mobLastY = 0;
     let mobPinchDist = 0;
 
-    mobFrameEl.addEventListener('mousedown', e => {
+    mobFrameElPaint.addEventListener('mousedown', e => {
         if (!mappedPixels || inspectMode) return;
         mobDragging = true; mobLastX = e.clientX; mobLastY = e.clientY;
         e.preventDefault();
@@ -5769,7 +5858,7 @@
     });
     window.addEventListener('mouseup', () => { mobDragging = false; });
 
-    mobFrameEl.addEventListener('touchstart', e => {
+    mobFrameElPaint.addEventListener('touchstart', e => {
         if (e.touches.length === 1 && !inspectMode) {
             mobDragging = true;
             mobLastX = e.touches[0].clientX; mobLastY = e.touches[0].clientY;
@@ -5782,7 +5871,7 @@
         e.preventDefault();
     }, { passive: false });
 
-    mobFrameEl.addEventListener('touchmove', e => {
+    mobFrameElPaint.addEventListener('touchmove', e => {
         if (e.touches.length === 1 && mobDragging) {
             const dx = e.touches[0].clientX - mobLastX;
             const dy = e.touches[0].clientY - mobLastY;
@@ -5802,7 +5891,7 @@
         e.preventDefault();
     }, { passive: false });
 
-    mobFrameEl.addEventListener('touchend', e => {
+    mobFrameElPaint.addEventListener('touchend', e => {
         if (e.touches.length === 0) mobDragging = false;
         // Inspect tap
         if (inspectMode && e.changedTouches.length === 1 && !mobDragging) {
@@ -5816,7 +5905,7 @@
         e.preventDefault();
     }, { passive: false });
 
-    mobFrameEl.addEventListener('wheel', e => {
+    mobFrameElPaint.addEventListener('wheel', e => {
         if (!mappedPixels) return;
         e.preventDefault();
         const delta = e.deltaY < 0 ? 50 : -50;
@@ -6025,6 +6114,608 @@
             }
         }, 200);
     });
+
+
+
+
+    // ═══════════════════════════════════════════════════════════════
+    // PAINT MODE — draw pixels, erase, undo/redo
+    // ═══════════════════════════════════════════════════════════════
+    let paintMode = false;
+    let paintColor = null; // palette entry or null = erase
+    let isPainting = false;
+    const UNDO_STACK = []; // each entry = snapshot of mappedPixels.colors
+    const REDO_STACK = [];
+    const MAX_HISTORY = 50;
+
+    let _paintScaleLocked = false;
+    let _prePaintScaleSnapshot = null; // colors before first paint stroke
+
+    function lockScale() {
+        if (_paintScaleLocked) return;
+        _paintScaleLocked = true;
+        _prePaintScaleSnapshot = [...mappedPixels.colors];
+        resSlider.disabled = true;
+        resText.disabled = true;
+        const mobRes = document.getElementById('mobResSlider');
+        if (mobRes) mobRes.disabled = true;
+        showToast('⚠️ Scale locked while painting. Undo all strokes to unlock.', 'info');
+    }
+
+    function checkUnlockScale() {
+        // Unlock if undo stack is back to before first paint
+        if (!_paintScaleLocked || !_prePaintScaleSnapshot) return;
+        // Check if current state matches pre-paint snapshot
+        const same = mappedPixels.colors.every((c, i) => {
+            const s = _prePaintScaleSnapshot[i];
+            return (c === null && s === null) || (c && s && c.hex === s.hex);
+        });
+        if (same) {
+            _paintScaleLocked = false;
+            _prePaintScaleSnapshot = null;
+            resSlider.disabled = false;
+            resText.disabled = false;
+            const mobRes = document.getElementById('mobResSlider');
+            if (mobRes) mobRes.disabled = false;
+            showToast('✅ Scale unlocked!', 'info');
+        }
+    }
+
+    function pushUndo() {
+        if (!mappedPixels) return;
+        // Store a deep copy: array of {hex} objects (or null)
+        UNDO_STACK.push(mappedPixels.colors.map(c => c ? { hex: c.hex } : null));
+        if (UNDO_STACK.length > MAX_HISTORY) UNDO_STACK.shift();
+        REDO_STACK.length = 0;
+        updateUndoRedoBtns();
+        if (!_paintScaleLocked) lockScale();
+    }
+
+    function applySnapshot(snapshot) {
+        // Restore colors from snapshot — map hex back to palette entry
+        mappedPixels.colors = snapshot.map(s => {
+            if (!s) return null;
+            return palette.find(p => p.hex === s.hex) || null;
+        });
+        recountAndRefresh();
+    }
+
+    function doUndo() {
+        if (!UNDO_STACK.length || !mappedPixels) return;
+        // Save current state to redo
+        REDO_STACK.push(mappedPixels.colors.map(c => c ? { hex: c.hex } : null));
+        applySnapshot(UNDO_STACK.pop());
+        updateUndoRedoBtns();
+        checkUnlockScale();
+    }
+
+    function doRedo() {
+        if (!REDO_STACK.length || !mappedPixels) return;
+        UNDO_STACK.push(mappedPixels.colors.map(c => c ? { hex: c.hex } : null));
+        applySnapshot(REDO_STACK.pop());
+        updateUndoRedoBtns();
+        // Don't re-lock scale from redo — scale stays as it is
+    }
+
+    function updateUndoRedoBtns() {
+        ['paintUndoBtn','mobPaintUndoBtn'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = UNDO_STACK.length === 0;
+        });
+        ['paintRedoBtn','mobPaintRedoBtn'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = REDO_STACK.length === 0;
+        });
+    }
+
+    function recountAndRefresh() {
+        currentCounts = new Array(palette.length).fill(0);
+        mappedPixels.colors.forEach(c => {
+            if (c) {
+                const i = palette.findIndex(p => p.hex === c.hex);
+                if (i >= 0) currentCounts[i]++;
+            }
+        });
+        blockGridFor = null;
+        renderCanvas();
+        renderStats();
+        updateCounters();
+    }
+
+    function setPaintMode(on) {
+        paintMode = on;
+        if (on && inspectMode) setInspectMode(false);
+        document.body.classList.toggle('paint-mode', on);
+
+        const btn = document.getElementById('paintModeToggle');
+        if (btn) {
+            btn.classList.toggle('active-paint', on);
+            btn.innerHTML = on
+                ? '🖊 Paint: ON<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · change color</span>'
+                : '🖊 Paint: OFF<br><span style="font-size:0.65rem;opacity:0.7;">click pixels · change color</span>';
+        }
+        const mobBtn = document.getElementById('mobPaintModeBtn');
+        if (mobBtn) mobBtn.classList.toggle('active-paint', on);
+
+        const picker = document.getElementById('paintColorPicker');
+        if (picker) picker.style.display = on ? 'flex' : 'none';
+        const mobPicker = document.getElementById('mobPaintPicker');
+        if (mobPicker) mobPicker.classList.toggle('visible', on);
+
+        if (on) {
+            buildPaintSwatches();
+            updateUndoRedoBtns();
+        }
+    }
+
+    function isErasing() {
+        return document.getElementById('paintEraseCb')?.checked
+            || document.getElementById('mobPaintEraseCb')?.checked;
+    }
+
+    function buildPaintSwatches() {
+        ['paintColorSwatches','mobPaintSwatches'].forEach(containerId => {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            c.innerHTML = '';
+            palette.forEach((col) => {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                const sw = document.createElement('div');
+                sw.className = 'paint-swatch' + (paintColor && paintColor.hex === col.hex ? ' selected' : '');
+                sw.style.background = col.hex;
+                sw.title = col.name + (col.active ? '' : ' (disabled)');
+                // X overlay for disabled paints
+                if (!col.active) {
+                    const x = document.createElement('div');
+                    x.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:bold;text-shadow:0 0 2px #000;pointer-events:none;';
+                    x.textContent = '✕';
+                    wrap.appendChild(x);
+                }
+                sw.addEventListener('click', () => {
+                    paintColor = col;
+                    ['paintEraseCb','mobPaintEraseCb'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.checked = false;
+                    });
+                    updatePaintColorLabel();
+                    buildPaintSwatches();
+                });
+                wrap.appendChild(sw);
+                c.appendChild(wrap);
+            });
+        });
+        updatePaintColorLabel();
+    }
+
+    function updatePaintColorLabel() {
+        const name = isErasing() ? '🗑 Eraser' : (paintColor ? paintColor.name : '— select a color');
+        ['paintColorName','mobPaintColorName'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = name;
+        });
+    }
+
+    function getPixelCoordsFromClient(clientX, clientY) {
+        // Exact same math as inspect mode click handler — known working
+        const rect = mainCanvas.getBoundingClientRect();
+        const scale = zoomSlider.value / 100;
+        return {
+            px: Math.floor((clientX - rect.left) / scale / BLOCK),
+            py: Math.floor((clientY - rect.top)  / scale / BLOCK)
+        };
+    }
+
+    let _paintStrokeStarted = false;
+    // Track painted pixels this stroke to avoid redundant work
+    let _paintedThisStroke = new Set();
+
+    function paintAt(clientX, clientY) {
+        if (!mappedPixels) return;
+        if (!isErasing() && !paintColor) return;
+        const { px, py } = getPixelCoordsFromClient(clientX, clientY);
+        if (px < 0 || py < 0 || px >= mappedPixels.w || py >= mappedPixels.h) return;
+        const key = px + ',' + py;
+        if (_paintedThisStroke.has(key)) return; // already painted this pixel this stroke
+        _paintedThisStroke.add(key);
+        const newColor = isErasing() ? null : paintColor;
+        const old = mappedPixels.colors[py * mappedPixels.w + px];
+        if (old === newColor || (old && newColor && old.hex === newColor.hex)) return;
+        // Update data
+        mappedPixels.colors[py * mappedPixels.w + px] = newColor;
+        // Paint directly to canvas immediately (instant feedback)
+        if (newColor) {
+            mainCtx.fillStyle = newColor.hex;
+            mainCtx.fillRect(px * BLOCK, py * BLOCK, BLOCK, BLOCK);
+        } else {
+            // Erase — draw checker pattern
+            mainCtx.clearRect(px * BLOCK, py * BLOCK, BLOCK, BLOCK);
+            for (let dy = 0; dy < BLOCK; dy++) {
+                for (let dx = 0; dx < BLOCK; dx++) {
+                    mainCtx.fillStyle = ((dx + dy) % 2 === 0) ? '#1a1a1a' : '#222';
+                    mainCtx.fillRect(px * BLOCK + dx, py * BLOCK + dy, 1, 1);
+                }
+            }
+        }
+        // Invalidate block grid (defer full recount to end of stroke)
+        blockGridFor = null;
+        _needsRecount = true;
+    }
+
+    let _needsRecount = false;
+    function finalizePaintStroke() {
+        if (!_needsRecount) return;
+        _needsRecount = false;
+        _paintedThisStroke.clear();
+        // Full recount
+        currentCounts = new Array(palette.length).fill(0);
+        mappedPixels.colors.forEach(c => {
+            if (c) {
+                const i = palette.findIndex(p => p.hex === c.hex);
+                if (i >= 0) currentCounts[i]++;
+            }
+        });
+        blockGridFor = null;
+        // Always full re-render so grid overlay and block opt update immediately
+        renderCanvas();
+        renderStats();
+        updateCounters();
+    }
+
+    // ── Paint mouse: wire on FRAME (same as inspect), mirror inspect coord math ──
+    // mousedown on frame starts stroke; mousemove paints while held; mouseup finalizes
+    frameEl.addEventListener('mousedown', (e) => {
+        if (!paintMode) return;
+        if (!isErasing() && !paintColor) { showToast('Select a color first!', 'info'); return; }
+        e.preventDefault();
+        _paintedThisStroke.clear();
+        pushUndo();
+        isPainting = true;
+        paintAt(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', (e) => {
+        if (!isPainting || !paintMode) return;
+        paintAt(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', () => {
+        if (isPainting && paintMode) { isPainting = false; finalizePaintStroke(); }
+    });
+
+    // Touch: wire on frame too
+    frameEl.addEventListener('touchstart', (e) => {
+        if (!paintMode) return;
+        if (!isErasing() && !paintColor) return;
+        e.preventDefault();
+        _paintedThisStroke.clear();
+        pushUndo();
+        isPainting = true;
+        const t = e.touches[0];
+        paintAt(t.clientX, t.clientY);
+    }, { passive: false });
+    frameEl.addEventListener('touchmove', (e) => {
+        if (!paintMode || !isPainting) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        paintAt(t.clientX, t.clientY);
+    }, { passive: false });
+    frameEl.addEventListener('touchend', () => {
+        if (isPainting && paintMode) { isPainting = false; finalizePaintStroke(); }
+    });
+
+    // Also wire mob frame for mobile mode
+    // mobFrameElPaint wired above in mob JS section
+
+    // Erase checkbox sync
+    ['paintEraseCb','mobPaintEraseCb'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', () => {
+            const other = id === 'paintEraseCb' ? 'mobPaintEraseCb' : 'paintEraseCb';
+            const otherEl = document.getElementById(other);
+            if (otherEl) otherEl.checked = el.checked;
+            if (el.checked) {
+                paintColor = null;
+                buildPaintSwatches();
+            }
+            updatePaintColorLabel();
+        });
+    });
+
+    // Undo/redo buttons
+    ['paintUndoBtn','mobPaintUndoBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', doUndo);
+    });
+    ['paintRedoBtn','mobPaintRedoBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', doRedo);
+    });
+
+    // Keyboard undo/redo
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); doRedo(); }
+    });
+
+    // Wire paint mode buttons
+    const paintModeToggleEl = document.getElementById('paintModeToggle');
+    if (paintModeToggleEl) paintModeToggleEl.addEventListener('click', () => setPaintMode(!paintMode));
+    const mobPaintModeBtnEl = document.getElementById('mobPaintModeBtn');
+    if (mobPaintModeBtnEl) mobPaintModeBtnEl.addEventListener('click', () => setPaintMode(!paintMode));
+
+    // Turn off paint when inspect turns on
+    const _origSetInspect = setInspectMode;
+    setInspectMode = function(on) {
+        if (on && paintMode) setPaintMode(false);
+        _origSetInspect(on);
+    };
+
+    updateUndoRedoBtns();
+
+
+    // ═══════════════════════════════════════════════════════════════
+    // FREE PAINT MODE (blank canvas)
+    // ═══════════════════════════════════════════════════════════════
+    let freePaintMode = false;
+
+    function createBlankCanvas(w, h) {
+        w = Math.max(1, Math.min(256, parseInt(w) || 32));
+        h = Math.max(1, Math.min(256, parseInt(h) || 32));
+        // Create blank mappedPixels (all null = transparent)
+        mappedPixels = { colors: new Array(w * h).fill(null), w, h };
+        currentCounts = new Array(palette.length).fill(0);
+        img = null;
+        freePaintMode = true;
+        document.body.classList.add('free-paint-mode');
+        UNDO_STACK.length = 0;
+        REDO_STACK.length = 0;
+        _paintScaleLocked = false;
+        _prePaintScaleSnapshot = null;
+        // Show image-loaded UI
+        document.body.classList.add('image-loaded');
+        document.getElementById('leftPaintsSection').style.display = 'flex';
+        // Hide image-only controls (scale + hue), keep zoom
+        const scaleRowEl = document.getElementById('scaleRow');
+        if (scaleRowEl) scaleRowEl.style.display = 'none';
+        const hueGroupEl = document.getElementById('hueSlider')?.closest('.input-group');
+        if (hueGroupEl) hueGroupEl.style.display = 'none';
+        if (!document.getElementById('freePaintClearBtn')) {
+            const cb = document.createElement('button');
+            cb.id = 'freePaintClearBtn';
+            cb.className = 'secondary';
+            cb.style.cssText = 'width:100%;padding:8px;font-size:0.82rem;margin-bottom:4px;';
+            cb.textContent = '🗑 Clear Canvas';
+            cb.onclick = () => {
+                pushUndo();
+                mappedPixels.colors.fill(null);
+                recountAndRefresh();
+            };
+            document.getElementById('dynamicControls').prepend(cb);
+        }
+        document.getElementById('freePaintClearBtn').style.display = '';
+        // Add overlay button
+        if (!document.getElementById('imageOverlayBtn')) {
+            const ob = document.createElement('button');
+            ob.id = 'imageOverlayBtn';
+            ob.className = 'secondary';
+            ob.style.cssText = 'width:100%;padding:8px;font-size:0.82rem;margin-bottom:4px;';
+            ob.textContent = '🖼 Image Overlay';
+            ob.onclick = toggleImageOverlay;
+            document.getElementById('freePaintClearBtn').after(ob);
+        }
+        document.getElementById('imageOverlayBtn').style.display = '';
+        // Turn on paint mode automatically
+        setPaintMode(true);
+        renderCanvas();
+        updateCounters();
+        renderStats();
+        fitToView();
+        updateUndoRedoBtns();
+    }
+
+    function exitFreePaintMode() {
+        freePaintMode = false;
+        document.body.classList.remove('free-paint-mode');
+        const scaleRowEl = document.getElementById('scaleRow');
+        if (scaleRowEl) scaleRowEl.style.display = '';
+        const hueGroup = document.getElementById('hueSlider')?.closest('.input-group');
+        if (hueGroup) hueGroup.style.display = '';
+        const fcb = document.getElementById('freePaintClearBtn');
+        if (fcb) fcb.style.display = 'none';
+        const overlayBtn = document.getElementById('imageOverlayBtn');
+        if (overlayBtn) overlayBtn.style.display = 'none';
+        removeImageOverlay();
+    }
+
+    // Wire new canvas button
+    document.getElementById('newCanvasBtn').addEventListener('click', () => {
+        openModal(document.getElementById('newCanvasModal'));
+    });
+    document.getElementById('newCanvasClose').onclick = () => closeModal(document.getElementById('newCanvasModal'));
+    document.getElementById('newCanvasModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('newCanvasModal')) closeModal(document.getElementById('newCanvasModal'));
+    });
+    document.getElementById('newCanvasCreate').addEventListener('click', () => {
+        const w = document.getElementById('newCanvasW').value;
+        const h = document.getElementById('newCanvasH').value;
+        closeModal(document.getElementById('newCanvasModal'));
+        createBlankCanvas(w, h);
+    });
+
+
+    // ── Image overlay for free paint mode ─────────────────────────────────────
+    // Overlaid on the frame (clipped), size independent of zoom, draggable, rotatable
+    let _overlayEl = null;
+    let _overlayActive = false;
+    let _overlayW = 200;
+    let _overlayOffX = 20, _overlayOffY = 20;
+    let _overlayRot = 0;
+    let _overlayDragging = false, _overlayResizing = false;
+    let _overlayDragSX = 0, _overlayDragSY = 0;
+    let _resizeSX = 0, _resizeStartW = 0;
+
+    function removeImageOverlay() {
+        if (_overlayEl) { _overlayEl.remove(); _overlayEl = null; }
+        _overlayActive = false;
+        _overlayRot = 0;
+        const btn = document.getElementById('imageOverlayBtn');
+        if (btn) btn.textContent = '🖼 Image Overlay';
+        const szRow = document.getElementById('overlayScaleRow');
+        if (szRow) szRow.style.display = 'none';
+    }
+
+    function applyOverlayTransform() {
+        if (!_overlayEl) return;
+        _overlayEl.style.left = _overlayOffX + 'px';
+        _overlayEl.style.top  = _overlayOffY + 'px';
+        _overlayEl.style.width = _overlayW + 'px';
+        _overlayEl.style.transform = `rotate(${_overlayRot}deg)`;
+    }
+
+    function loadOverlayImage(src) {
+        // Remove existing overlay first
+        if (_overlayEl) { _overlayEl.remove(); _overlayEl = null; }
+        _overlayActive = true;
+        _overlayOffX = 20; _overlayOffY = 20; _overlayRot = 0;
+
+        // Create overlay inside the frame element so it's clipped to it
+        const frame = (typeof mobMode !== 'undefined' && mobMode)
+            ? document.getElementById('mobFrame')
+            : document.getElementById('frame');
+
+        _overlayEl = document.createElement('div');
+        _overlayEl.id = 'imageOverlayDiv';
+        _overlayEl.style.cssText = `position:absolute;z-index:50;left:${_overlayOffX}px;top:${_overlayOffY}px;width:${_overlayW}px;cursor:move;user-select:none;border:2px dashed var(--accent);border-radius:4px;box-sizing:border-box;transform-origin:top left;`;
+
+        const imgEl = document.createElement('img');
+        imgEl.src = src;
+        imgEl.style.cssText = 'width:100%;display:block;opacity:0.5;pointer-events:none;';
+        imgEl.id = 'overlayImgEl';
+        _overlayEl.appendChild(imgEl);
+
+        // Resize handle (bottom-right)
+        const resizeHandle = document.createElement('div');
+        resizeHandle.id = 'overlayResizeHandle';
+        resizeHandle.style.cssText = 'position:absolute;bottom:0;right:0;width:14px;height:14px;background:var(--accent);cursor:se-resize;opacity:0.8;';
+        _overlayEl.appendChild(resizeHandle);
+
+        // Delete button (top-right)
+        const delBtn = document.createElement('div');
+        delBtn.style.cssText = 'position:absolute;top:-10px;right:-10px;width:20px;height:20px;background:#e05555;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:#fff;font-weight:bold;z-index:10;';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Remove overlay';
+        delBtn.addEventListener('mousedown', (e) => { e.stopPropagation(); removeImageOverlay(); });
+        _overlayEl.appendChild(delBtn);
+
+        frame.appendChild(_overlayEl);
+
+        // Make sure frame is position:relative for absolute children
+        if (getComputedStyle(frame).position === 'static') frame.style.position = 'relative';
+
+        // Wire drag
+        _overlayEl.addEventListener('mousedown', (e) => {
+            if (e.target === resizeHandle || e.target === delBtn) return;
+            _overlayDragging = true;
+            _overlayDragSX = e.clientX - _overlayOffX;
+            _overlayDragSY = e.clientY - _overlayOffY;
+            e.stopPropagation(); e.preventDefault();
+        });
+
+        // Wire resize
+        resizeHandle.addEventListener('mousedown', (e) => {
+            _overlayResizing = true;
+            _resizeSX = e.clientX;
+            _resizeStartW = _overlayW;
+            e.stopPropagation(); e.preventDefault();
+        });
+
+        const btn = document.getElementById('imageOverlayBtn');
+        if (btn) btn.textContent = '🖼 Change Image';
+
+        // Show controls
+        let szRow = document.getElementById('overlayScaleRow');
+        if (!szRow) {
+            szRow = document.createElement('div');
+            szRow.id = 'overlayScaleRow';
+            szRow.style.cssText = 'display:flex;flex-direction:column;gap:4px;font-size:0.72rem;color:var(--text2);';
+            szRow.innerHTML = `
+                <label style="display:flex;justify-content:space-between;"><span>Width</span><span id="overlayScaleVal">${_overlayW}px</span></label>
+                <input type="range" id="overlayScaleSlider" min="20" max="2000" value="${_overlayW}" style="width:100%;accent-color:var(--accent);">
+                <label style="display:flex;justify-content:space-between;"><span>Rotation</span><span id="overlayRotVal">0°</span></label>
+                <input type="range" id="overlayRotSlider" min="-180" max="180" value="0" style="width:100%;accent-color:var(--accent);">
+                <div style="display:flex;align-items:center;gap:6px;"><span>Opacity</span><input type="range" id="overlayOpacity" min="0" max="100" value="50" style="flex:1;accent-color:var(--accent);"></div>`;
+            document.getElementById('imageOverlayBtn').after(szRow);
+
+            document.getElementById('overlayScaleSlider').addEventListener('input', () => {
+                _overlayW = parseInt(document.getElementById('overlayScaleSlider').value);
+                document.getElementById('overlayScaleVal').textContent = _overlayW + 'px';
+                applyOverlayTransform();
+            });
+            document.getElementById('overlayRotSlider').addEventListener('input', () => {
+                _overlayRot = parseInt(document.getElementById('overlayRotSlider').value);
+                document.getElementById('overlayRotVal').textContent = _overlayRot + '°';
+                applyOverlayTransform();
+            });
+            document.getElementById('overlayOpacity').addEventListener('input', () => {
+                const imgE = document.getElementById('overlayImgEl');
+                if (imgE) imgE.style.opacity = document.getElementById('overlayOpacity').value / 100;
+            });
+        } else {
+            document.getElementById('overlayScaleSlider').value = _overlayW;
+            document.getElementById('overlayScaleVal').textContent = _overlayW + 'px';
+            document.getElementById('overlayRotSlider').value = 0;
+            document.getElementById('overlayRotVal').textContent = '0°';
+        }
+        szRow.style.display = 'flex';
+    }
+
+    // Global mousemove/up for drag and resize
+    window.addEventListener('mousemove', (e) => {
+        if (_overlayDragging) {
+            _overlayOffX = e.clientX - _overlayDragSX;
+            _overlayOffY = e.clientY - _overlayDragSY;
+            applyOverlayTransform();
+        }
+        if (_overlayResizing) {
+            _overlayW = Math.max(20, _resizeStartW + (e.clientX - _resizeSX));
+            document.getElementById('overlayScaleSlider').value = Math.min(2000, _overlayW);
+            document.getElementById('overlayScaleVal').textContent = Math.round(_overlayW) + 'px';
+            applyOverlayTransform();
+        }
+    });
+    window.addEventListener('mouseup', () => { _overlayDragging = false; _overlayResizing = false; });
+
+    function toggleImageOverlay() {
+        // Always opens file picker — replaces existing overlay if any
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = 'image/*';
+        inp.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => loadOverlayImage(ev.target.result);
+            reader.readAsDataURL(file);
+        };
+        inp.click();
+    }
+
+    // When a real image is uploaded, exit free paint mode + clear history + unlock scale
+    const _origLoadImageFile = loadImageFile;
+    loadImageFile = function(file) {
+        if (freePaintMode) exitFreePaintMode();
+        // Clear all paint history and unlock scale
+        UNDO_STACK.length = 0;
+        REDO_STACK.length = 0;
+        _paintScaleLocked = false;
+        _prePaintScaleSnapshot = null;
+        resSlider.disabled = false;
+        resText.disabled = false;
+        const mobRes = document.getElementById('mobResSlider');
+        if (mobRes) mobRes.disabled = false;
+        updateUndoRedoBtns();
+        setPaintMode(false);
+        _origLoadImageFile(file);
+    };
 
     initMasterList();
     // Master paints search filter
