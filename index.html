@@ -1687,6 +1687,52 @@
     </div>
 </div>
 
+
+<!-- Scale to Map Modal -->
+<div id="scaleToMapModal" class="modal-backdrop" style="z-index:9400;">
+    <div class="modal-box" style="background:var(--bg2);border:2px solid var(--border2);border-radius:14px;padding:22px;width:min(480px,95vw);max-height:90vh;display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:1rem;color:var(--text);">🗺️ Scale to Map</h3>
+            <button id="scaleToMapClose" style="background:var(--btn-sec);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text);font-family:inherit;">✕</button>
+        </div>
+
+        <!-- Step 1: Choose map -->
+        <div id="stmStep1">
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:8px;">Select a map size (X × Y × Z):</div>
+            <div id="stmMapList" style="display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- Step 2: Choose surface -->
+        <div id="stmStep2" style="display:none;flex-direction:column;gap:10px;">
+            <div style="font-size:0.78rem;color:var(--text2);">Map: <strong id="stmSelectedMapLabel" style="color:var(--accent);"></strong></div>
+            <div style="font-size:0.82rem;color:var(--text);margin-bottom:2px;">Where is the pixel art going?</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <button id="stmFloorBtn" style="padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--card);color:var(--text);font-family:inherit;font-size:0.85rem;cursor:pointer;text-align:left;">
+                    🟫 Floor (ground) <span style="font-size:0.72rem;color:var(--text3);" id="stmFloorDims"></span>
+                </button>
+                <button id="stmWallXBtn" style="padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--card);color:var(--text);font-family:inherit;font-size:0.85rem;cursor:pointer;text-align:left;">
+                    🧱 Wall (X axis) <span style="font-size:0.72rem;color:var(--text3);" id="stmWallXDims"></span>
+                </button>
+                <button id="stmWallZBtn" style="padding:10px;border-radius:8px;border:1px solid var(--border2);background:var(--card);color:var(--text);font-family:inherit;font-size:0.85rem;cursor:pointer;text-align:left;">
+                    🧱 Wall (Z axis) <span style="font-size:0.72rem;color:var(--text3);" id="stmWallZDims"></span>
+                </button>
+            </div>
+            <button id="stmBackBtn" class="secondary" style="font-size:0.78rem;padding:6px;">← Back</button>
+        </div>
+
+        <!-- Step 3: Result preview -->
+        <div id="stmStep3" style="display:none;flex-direction:column;gap:10px;">
+            <div style="font-size:0.82rem;color:var(--text);">Result:</div>
+            <div id="stmResultText" style="font-size:0.9rem;color:var(--accent);font-weight:bold;"></div>
+            <div id="stmResultDesc" style="font-size:0.75rem;color:var(--text2);line-height:1.6;"></div>
+            <div style="display:flex;gap:8px;">
+                <button id="stmApplyBtn" style="flex:1;background:var(--accent);border:none;border-radius:8px;padding:10px;color:#fff;font-family:inherit;font-size:0.88rem;cursor:pointer;">✅ Apply Scale</button>
+                <button id="stmBack2Btn" class="secondary" style="font-size:0.78rem;padding:6px 12px;">← Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="toast"></div>
 <div id="dropOverlay">📂 Drop image here</div>
 
@@ -1780,6 +1826,7 @@
                 <div style="font-size:0.68rem; color:var(--text3); margin-top:-2px; padding-left:2px;">(limits use of yeeps blocks!)</div>
                 <!-- Scale to block limit -->
                 <button id="scaleToLimitBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">📐 Scale to Block Limit (6000)</button>
+                <button id="scaleToMapBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">🗺️ Scale to Map</button>
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                     <div id="selectionStatus" style="flex:1;">
                         <div id="paintSelected">Click a pixel in Inspect mode</div>
@@ -6869,6 +6916,141 @@
         if (bot) { bot.disabled = blockDisabled; bot.style.opacity = blockDisabled ? '0.4' : ''; }
         if (bos) { bos.disabled = blockDisabled; bos.style.opacity = blockDisabled ? '0.4' : ''; }
     }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    // SCALE TO MAP
+    // ═══════════════════════════════════════════════════════════════
+    const YEEPS_MAPS = [
+        { label: '80 × 80 × 80',   x:80,  y:80,  z:80  },
+        { label: '32 × 32 × 32',   x:32,  y:32,  z:32  },
+        { label: '128 × 96 × 128', x:128, y:96,  z:128 },
+        { label: '160 × 48 × 160', x:160, y:48,  z:160 },
+        { label: '80 × 80 × 112',  x:80,  y:80,  z:112 },
+        { label: '112 × 80 × 80',  x:112, y:80,  z:80  },
+        { label: '112 × 80 × 112', x:112, y:80,  z:112 },
+        { label: '64 × 80 × 192',  x:64,  y:80,  z:192 },
+        { label: '192 × 80 × 64',  x:192, y:80,  z:64  },
+        { label: '64 × 80 × 256',  x:64,  y:80,  z:256 },
+        { label: '80 × 128 × 80',  x:80,  y:128, z:80  },
+        { label: '96 × 128 × 96',  x:96,  y:128, z:96  },
+        { label: '80 × 192 × 80',  x:80,  y:192, z:80  },
+        { label: '64 × 256 × 64',  x:64,  y:256, z:64  },
+    ];
+
+    let stmSelectedMap = null;
+    let stmPendingScale = null;
+
+    function stmFitScale(imgW, imgH, maxW, maxH) {
+        // Fit image (imgW x imgH) inside (maxW x maxH) without cropping
+        // Returns the scale that makes it fit, keeping aspect ratio
+        const scale = Math.min(maxW / imgW, maxH / imgH);
+        const fitW = Math.floor(imgW * scale);
+        const fitH = Math.floor(imgH * scale);
+        // Find the scale slider value (1-256) that gives closest to fitW
+        // Scale slider = width in pixels of the shorter dimension on output
+        return { fitW, fitH, scale };
+    }
+
+    function stmGetScaleValue(fitW, fitH) {
+        // The resSlider controls the larger of width/height up to 256
+        // Actually it controls the output width directly
+        return Math.min(256, Math.max(1, fitW));
+    }
+
+    function stmShowStep1() {
+        document.getElementById('stmStep1').style.display = '';
+        document.getElementById('stmStep2').style.display = 'none';
+        document.getElementById('stmStep3').style.display = 'none';
+        const list = document.getElementById('stmMapList');
+        list.innerHTML = '';
+        YEEPS_MAPS.forEach((map, i) => {
+            const btn = document.createElement('button');
+            btn.style.cssText = 'width:100%;padding:9px 12px;border-radius:7px;border:1px solid var(--border2);background:var(--card);color:var(--text);font-family:inherit;font-size:0.85rem;cursor:pointer;text-align:left;transition:0.15s;';
+            btn.textContent = map.label;
+            btn.addEventListener('mouseenter', () => btn.style.background = 'var(--border)');
+            btn.addEventListener('mouseleave', () => btn.style.background = 'var(--card)');
+            btn.addEventListener('click', () => { stmSelectedMap = map; stmShowStep2(); });
+            list.appendChild(btn);
+        });
+    }
+
+    function stmShowStep2() {
+        const m = stmSelectedMap;
+        document.getElementById('stmStep1').style.display = 'none';
+        document.getElementById('stmStep2').style.display = 'flex';
+        document.getElementById('stmStep3').style.display = 'none';
+        document.getElementById('stmSelectedMapLabel').textContent = m.label;
+
+        // Always fully rewrite button text to avoid stale labels
+        const floorBtn = document.getElementById('stmFloorBtn');
+        const wallXBtn = document.getElementById('stmWallXBtn');
+        const wallZBtn = document.getElementById('stmWallZBtn');
+
+        floorBtn.innerHTML = `🟫 Floor (ground) <span style="font-size:0.72rem;color:var(--text3);">(${m.x} × ${m.z} pixels)</span>`;
+
+        if (m.x === m.z) {
+            wallXBtn.innerHTML = `🧱 Wall <span style="font-size:0.72rem;color:var(--text3);">(${m.z} × ${m.y} — X and Z walls are same size)</span>`;
+            wallZBtn.style.display = 'none';
+        } else {
+            wallXBtn.innerHTML = `🧱 Wall (X axis) <span style="font-size:0.72rem;color:var(--text3);">(${m.z} × ${m.y} pixels)</span>`;
+            wallZBtn.style.display = '';
+            wallZBtn.innerHTML = `🧱 Wall (Z axis) <span style="font-size:0.72rem;color:var(--text3);">(${m.x} × ${m.y} pixels)</span>`;
+        }
+    }
+
+    function stmApplySurface(surfaceW, surfaceH, surfaceLabel) {
+        if (!img) { showToast('Load an image first', 'info'); return; }
+        const m = stmSelectedMap;
+        const imgW = img.width, imgH = img.height;
+        const { fitW, fitH } = stmFitScale(imgW, imgH, surfaceW, surfaceH);
+        const scaleVal = Math.min(256, Math.max(1, fitW));
+
+        document.getElementById('stmStep2').style.display = 'none';
+        document.getElementById('stmStep3').style.display = 'flex';
+
+        document.getElementById('stmResultText').textContent =
+            `Scale: ${scaleVal}px wide → ${fitW} × ${fitH} pixel art`;
+        document.getElementById('stmResultDesc').textContent =
+            `Map: ${m.label}\n` +
+            `Surface: ${surfaceLabel} (${surfaceW} × ${surfaceH})\n` +
+            `Image: ${imgW} × ${imgH} → fits as ${fitW} × ${fitH}\n` +
+            `${fitW < surfaceW || fitH < surfaceH ? `Leaves ${surfaceW - fitW} columns and ${surfaceH - fitH} rows empty (image kept at full aspect ratio)` : 'Perfect fit!'}`;
+
+        stmPendingScale = scaleVal;
+    }
+
+    document.getElementById('stmFloorBtn').addEventListener('click', () => {
+        stmApplySurface(stmSelectedMap.x, stmSelectedMap.z, 'Floor (X × Z)');
+    });
+    document.getElementById('stmWallXBtn').addEventListener('click', () => {
+        stmApplySurface(stmSelectedMap.z, stmSelectedMap.y, 'Wall (Z × Y)');
+    });
+    document.getElementById('stmWallZBtn').addEventListener('click', () => {
+        stmApplySurface(stmSelectedMap.x, stmSelectedMap.y, 'Wall (X × Y)');
+    });
+    document.getElementById('stmBackBtn').addEventListener('click', stmShowStep1);
+    document.getElementById('stmBack2Btn').addEventListener('click', stmShowStep2);
+
+    document.getElementById('stmApplyBtn').addEventListener('click', () => {
+        if (stmPendingScale === null) return;
+        resSlider.value = stmPendingScale;
+        resText.value = stmPendingScale;
+        updateDisplay();
+        closeModal(document.getElementById('scaleToMapModal'));
+        showToast(`✅ Scale set to ${stmPendingScale}px`);
+    });
+
+    document.getElementById('scaleToMapBtn').addEventListener('click', () => {
+        if (!img) { showToast('Load an image first', 'info'); return; }
+        if (paintMode || freePaintMode) { showToast('Unavailable in paint mode', 'info'); return; }
+        stmShowStep1();
+        openModal(document.getElementById('scaleToMapModal'));
+    });
+    document.getElementById('scaleToMapClose').onclick = () => closeModal(document.getElementById('scaleToMapModal'));
+    document.getElementById('scaleToMapModal').addEventListener('click', e => {
+        if (e.target === document.getElementById('scaleToMapModal')) closeModal(document.getElementById('scaleToMapModal'));
+    });
 
     initMasterList();
     // Master paints search filter
