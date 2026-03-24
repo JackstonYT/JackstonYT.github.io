@@ -5132,6 +5132,7 @@
             colorMatch: document.getElementById('gsColorMatch').value,
             dither:     document.getElementById('gsDither').value,
             saveGrid:   document.getElementById('gsSaveGrid').checked ? 1 : 0,
+            grayBias:   document.getElementById('grayBiasToggle').checked ? 1 : 0,
             blocks:     blockStates,
             palette: palette.map(c => c.active ? 1 : 0),
             used: currentCounts.map((cnt, i) => cnt > 0 ? palette[i].hex : null).filter(Boolean),
@@ -5203,6 +5204,7 @@
         if (state.colorMatch) document.getElementById('gsColorMatch').value = state.colorMatch;
         if (state.dither)     document.getElementById('gsDither').value     = state.dither;
         if (state.saveGrid !== undefined) document.getElementById('gsSaveGrid').checked = state.saveGrid === 1;
+        if (state.grayBias !== undefined) document.getElementById('grayBiasToggle').checked = state.grayBias === 1;
         // Block states
         if (state.blocks) {
             YEEPS_BLOCK_DEFS.forEach(d => {
