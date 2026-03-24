@@ -4535,10 +4535,10 @@
         { title: 'Forge Ahead',  artist: 'Yeeps',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026307/Yeeps_hide_and_seek_Ost_-_Forge_Ahead_wodhzh.mp3' },
         { title: 'Yee Haw',      artist: 'Yeeps',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026382/Yeeps_OST_-_Desert_Theme__Yee-Haw_lynh0r.mp3' },
         { title: 'Horror Bear',  artist: 'Yeeps',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026440/Yeeps_Horror_Ost_-_Horror_Bear_tphjfd.mp3' },
-        { title: 'Wilds Style',  artist: 'BatVR',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026551/YEEPS__Hide_and_Seek_OST_-_Wilds_Style_mze6mr.mp3' },
-        { title: 'Pink',         artist: 'Ech0',     src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774069779/Pink_zpdh41.mp3' },
-        { title: 'YEEPS BREAKCORE', artist: 'M!NASONE', src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774104773/Yeeps_Breakcore_rxvjvs.mp3' },
-        { title: 'Drumming In The City', artist: 'Bokobling', src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774105212/Drumming_In_The_City_dpuqn4.mp3' },
+        { title: 'Wilds Style',  artist: 'BatVR',  src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774026551/YEEPS__Hide_and_Seek_OST_-_Wilds_Style_mze6mr.mp3', cover: 'https://res.cloudinary.com/dqu51shdl/image/upload/v1774388639/yeeps-colors-big_14_oacjqu.png' },
+        { title: 'Pink',         artist: 'Ech0',     src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774069779/Pink_zpdh41.mp3', cover: 'https://res.cloudinary.com/dqu51shdl/image/upload/v1774388640/yeeps-colors-big_13_ipebnm.png' },
+        { title: 'YEEPS BREAKCORE', artist: 'M!NASONE', src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774104773/Yeeps_Breakcore_rxvjvs.mp3', cover: 'https://res.cloudinary.com/dqu51shdl/image/upload/v1774388640/yeeps-colors-big_12_dg0tw4.png' },
+        { title: 'Drumming In The City', artist: 'Bokobling', src: 'https://res.cloudinary.com/dqu51shdl/video/upload/v1774105212/Drumming_In_The_City_dpuqn4.mp3', cover: 'https://res.cloudinary.com/dqu51shdl/image/upload/v1774388723/yeeps-colors-big_16_r5zh32.png' },
     ];
 
     const GIF_SRC    = 'https://res.cloudinary.com/dqu51shdl/image/upload/v1773974888/giphy_iprhxa.gif';
@@ -4623,11 +4623,54 @@
             nowPlayingGif.src = GIF_SRC + '?t=' + Date.now();
             if (trackEl)  trackEl.textContent  = t ? t.title  : '';
             if (artistEl) artistEl.textContent = t ? t.artist : '';
+            // Tab title
+            document.title = t ? `${t.title} — ${t.artist} · Yeeps Color Converter` : 'Yeeps Color Converter';
+            // Media Session API
+            if ('mediaSession' in navigator && t) {
+                // Wire action handlers first (before metadata so OS registers them)
+                navigator.mediaSession.setActionHandler('nexttrack',     () => nextTrack());
+                navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+                navigator.mediaSession.setActionHandler('play',  () => { musicAudio.play(); musicPlaying = true; updateMusicUI(); updateNowPlayingWidget(true); });
+                navigator.mediaSession.setActionHandler('pause', () => { musicAudio.pause(); musicPlaying = false; updateMusicUI(); updateNowPlayingWidget(false); });
+                try { navigator.mediaSession.setActionHandler('seekforward',  null); } catch(e){}
+                try { navigator.mediaSession.setActionHandler('seekbackward', null); } catch(e){}
+
+                const coverUrl = t.cover || TITLE_STATIC;
+                const coverSize = t.cover ? '512x512' : '160x160';
+
+                // Preload the image then set metadata — Windows needs it loaded first
+                const preloadImg = new Image();
+                preloadImg.onload = () => {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title:  t.title,
+                        artist: t.artist,
+                        album:  'Yeeps Color Converter',
+                        artwork: [{ src: coverUrl, sizes: coverSize, type: 'image/png' }]
+                    });
+                    navigator.mediaSession.playbackState = 'playing';
+                };
+                preloadImg.onerror = () => {
+                    // Fallback: set without artwork
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title:  t.title,
+                        artist: t.artist,
+                        album:  'Yeeps Color Converter',
+                        artwork: []
+                    });
+                    navigator.mediaSession.playbackState = 'playing';
+                };
+                preloadImg.src = coverUrl;
+            }
         } else {
             nowPlayingGif.src = STATIC_IMG;
             if (trackEl)  trackEl.textContent  = 'NOT PLAYING';
             if (artistEl) artistEl.textContent = '';
             if (!musicEnabled) nowPlayingWidget.classList.remove('active');
+            // Reset tab title
+            document.title = 'Yeeps Color Converter';
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'paused';
+            }
         }
         updateTitleImgs(playing && musicEnabled);
     }
