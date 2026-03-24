@@ -1083,8 +1083,7 @@
         .ap-font-btn:hover:not(.active) { transform: translateX(4px) !important; border-color: var(--accent) !important; }
         .ap-mode-btn { transition: background 0.15s, color 0.15s, transform 0.12s !important; }
         .ap-mode-btn:hover:not(.active) { transform: translateY(-2px) scale(1.04) !important; }
-        #gridGearBtn { transition: background 0.2s, transform 0.2s !important; }
-        #gridGearBtn:hover { transform: rotate(25deg) scale(1.1) !important; }
+        #gridGearBtn { transition: background 0.2s !important; }
         #appearanceBtn { transition: background 0.2s, transform 0.2s, box-shadow 0.2s !important; }
         #appearanceBtn:hover { transform: rotate(-15deg) scale(1.1) !important; }
         #myPaintsBtn { transition: transform 0.15s !important; }
@@ -1387,6 +1386,10 @@
             <button id="findOptClose" style="background:var(--btn-sec);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text);font-family:inherit;">✕</button>
         </div>
         <div style="font-size:0.75rem;color:var(--accent);font-style:italic;">Credits to Nonek aka Mia for this idea!</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.78rem;color:var(--text2);cursor:pointer;">
+            <input type="checkbox" id="foExcludeUnobtainable" checked style="accent-color:var(--accent);">
+            Exclude unobtainable blocks (Grass Block — CW: FREEBLOCKS only)
+        </label>
         <div style="font-size:0.78rem;color:var(--text2);line-height:1.5;">
             Tests block combinations to find the fewest total blocks for your image. Uses greedy elimination — fast and near-optimal. Requires an image to be loaded.
         </div>
@@ -1679,6 +1682,10 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;">
             <button id="gsMaxOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer; font-family:inherit;">⚡ Max Optimization (enable all blocks)</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text2);cursor:pointer;padding:2px 0;">
+                <input type="checkbox" id="maxOptExcludeUnobtainable" checked style="accent-color:var(--accent);">
+                Exclude unobtainable blocks (Grass Block)
+            </label>
             <button id="gsChooseBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🧱 Choose Blocks!</button>
             <button id="gsUniqueBlocksBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">⭐ Unique Blocks</button>
             <button id="gsMoreOptBtn" style="width:100%; padding:7px; font-size:0.82rem; background:var(--btn-sec); border:1px solid var(--border2); border-radius:6px; color:var(--text); cursor:pointer; font-family:inherit;">🔀 More Optimization</button>
@@ -1810,7 +1817,6 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <button id="toggleGrid" class="secondary" style="flex:1; font-size:0.9rem; min-width:90px;">Grid: OFF</button>
-                    <button id="gridGearBtn" class="secondary" style="font-size:1rem; padding:6px 10px;" title="Grid Settings (color match, dither, save grid)">⚙️</button>
                     <label style="font-size:0.8rem; white-space:nowrap; flex-shrink:0;">X:
                         <input type="number" id="gridOffsetX" value="0" step="0.05" class="num-input" style="width:52px;">
                     </label>
@@ -1824,6 +1830,8 @@
                     <button id="blockOptSettingsBtn" class="secondary" style="font-size:1rem; padding:6px 10px; display:none;" title="Block Optimization Settings">⚙️</button>
                 </div>
                 <div style="font-size:0.68rem; color:var(--text3); margin-top:-2px; padding-left:2px;">(limits use of yeeps blocks!)</div>
+                <!-- Standalone Settings button -->
+                <button id="gridGearBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">⚙️ Settings</button>
                 <!-- Scale to block limit -->
                 <button id="scaleToLimitBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">📐 Scale to Block Limit (6000)</button>
                 <button id="scaleToMapBtn" class="secondary" style="width:100%; font-size:0.82rem; padding:7px;">🗺️ Scale to Map</button>
@@ -1978,9 +1986,9 @@
 
 <div id="gridSettingsModal" class="modal-backdrop">
     <div id="gridSettingsBox" class="modal-box">
-        <h3>⚙️ Grid Settings</h3>
+        <h3>⚙️ Image Settings</h3>
 
-        <!-- Tabs: General + Block Count only -->
+        <!-- Tabs: General + Block Count + Experimental -->
         <div class="gs-tabs">
             <button class="gs-tab active" data-tab="gsTabGeneral">General</button>
             <button class="gs-tab" data-tab="gsTabBlockList">Block Count</button>
@@ -1992,8 +2000,15 @@
             <input type="checkbox" id="gsBlockOpt" style="display:none;">
             <div id="gsBlockOptSub" style="display:none;"></div>
             <div class="gs-row">
-                <label><input type="checkbox" id="gsSaveGrid" checked> Save Grid with PNG (Big only)</label>
+                <label><input type="checkbox" id="gsSaveGrid" checked> Bake grid into downloaded PNG</label>
                 <div class="gs-desc">When downloading, bakes the current grid overlay into the exported PNG.</div>
+            </div>
+            <div class="gs-row">
+                <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+                    <span>Gray Bias</span>
+                    <input type="checkbox" id="grayBiasToggle" style="accent-color:var(--accent);">
+                </label>
+                <div class="gs-desc">Steers near-gray pixels toward true gray paints instead of off-browns or tinted colors. Try it — if it reduces your block count or looks better, keep it on. If it makes wires or similar look noisy, leave it off.</div>
             </div>
             <div class="gs-row">
                 <label>Color Matching</label>
@@ -2013,6 +2028,7 @@
                     <option value="bayer">Ordered / Bayer (pattern-based)</option>
                 </select>
             </div>
+
         </div>
 
         <!-- Block count tab -->
@@ -2049,6 +2065,13 @@
         <div id="gsUniquePanel">
             <div class="gs-unique-row" id="uniqRow_16x16">
                 <label><input type="checkbox" id="uniq_16x16"> Build Plate (16×16)</label>
+            </div>
+            <div class="gs-unique-row" id="uniqRow_6x16">
+                <label><input type="checkbox" id="uniq_6x16"> Grass Block (6×16) <span style="color:#e0a855; font-size:0.7rem; margin-left:4px;">⚠️ Unobtainable normally</span></label>
+                <div style="font-size:0.65rem;color:#e0a855;padding:2px 6px;margin-top:2px;">Get from <strong>CW: FREEBLOCKS</strong> only</div>
+            </div>
+            <div class="gs-unique-row" id="uniqRow_6x8">
+                <label><input type="checkbox" id="uniq_6x8"> Wooden Passageway (6×8)</label>
             </div>
             <div class="gs-unique-row" id="uniqRow_3x2">
                 <label><input type="checkbox" id="uniq_3x2"> Vending Machine (3×2)</label>
@@ -2212,22 +2235,24 @@
     // Yeeps block definitions — sorted by priority (area DESC, per official list)
     // sideways:true = off by default, shown in "Sideways Blocks" section in the Blocks tab
     const YEEPS_BLOCK_DEFS = [
-        { key:'16x16', label:'Build Plate (16×16)',            type:'Build Plate',           w:16, h:16, active:false, unique:true }, // P1  area 256
-        { key:'8x8',   label:'Wood Block (8×8)',               type:'Wood Block',            w:8,  h:8,  active:true  }, // P2  area 64
-        { key:'4x8',   label:'Wood Block (4×8)',               type:'Wood Block',            w:4,  h:8,  active:true  }, // P3  area 32
-        { key:'2x16',  label:'Wood Block (2×16)',              type:'Wood Block',            w:2,  h:16, active:true  }, // P4  area 32
-        { key:'3x6',   label:'Horror Table (3×6)',             type:'Horror Table',          w:3,  h:6,  active:false, unique:true }, // P5  area 18
-        { key:'4x4',   label:'Wood Block (4×4)',               type:'Wood Block',            w:4,  h:4,  active:true  }, // P6  area 16
-        { key:'2x8',   label:'Wood Block (2×8)',               type:'Wood Block',            w:2,  h:8,  active:true  }, // P7  area 16
-        { key:'1x16',  label:'Wood Block (1×16)',              type:'Wood Block',            w:1,  h:16, active:false, sideways:true }, // P8  area 16 — sideways, off by default
-        { key:'2x4',   label:'Wood Block (2×4)',               type:'Wood Block',            w:2,  h:4,  active:true  }, // P9  area 8
-        { key:'1x8',   label:'Wood Block (1×8)',               type:'Wood Block',            w:1,  h:8,  active:true  }, // P10 area 8
-        { key:'3x2',   label:'Vending Machine (3×2)',          type:'Vending Machine',       w:3,  h:2,  active:false, unique:true }, // P11 area 6
-        { key:'2x2',   label:'Wood Block (2×2)',               type:'Wood Block',            w:2,  h:2,  active:true  }, // P12 area 4
-        { key:'1x4',   label:'Wood Block (1×4)',               type:'Wood Block',            w:1,  h:4,  active:true  }, // P13 area 4
-        { key:'1x3',   label:'Sideways Vending Machine (1×3)', type:'Sideways Vending Machine', w:1, h:3, active:false, sideways:true, unique:true }, // P14 area 3 — sideways, off by default
-        { key:'1x2',   label:'Wood Block (1×2)',               type:'Wood Block',            w:1,  h:2,  active:true  }, // P15 area 2
-        { key:'1x1',   label:'Wood Block (1×1)',               type:'Wood Block',            w:1,  h:1,  active:true  }, // P16 area 1
+        { key:'16x16', label:'Build Plate (16×16)',            type:'Build Plate',           w:16, h:16, active:false, unique:true }, // area 256
+        { key:'6x16',  label:'Grass Block (6×16)',             type:'Grass Block',           w:6,  h:16, active:false, unique:true }, // area 96
+        { key:'8x8',   label:'Wood Block (8×8)',               type:'Wood Block',            w:8,  h:8,  active:true  }, // area 64
+        { key:'6x8',   label:'Wooden Passageway (6×8)',        type:'Wooden Passageway',     w:6,  h:8,  active:false, unique:true }, // area 48
+        { key:'4x8',   label:'Wood Block (4×8)',               type:'Wood Block',            w:4,  h:8,  active:true  }, // area 32
+        { key:'2x16',  label:'Wood Block (2×16)',              type:'Wood Block',            w:2,  h:16, active:true  }, // area 32
+        { key:'3x6',   label:'Horror Table (3×6)',             type:'Horror Table',          w:3,  h:6,  active:false, unique:true }, // area 18
+        { key:'4x4',   label:'Wood Block (4×4)',               type:'Wood Block',            w:4,  h:4,  active:true  }, // area 16
+        { key:'2x8',   label:'Wood Block (2×8)',               type:'Wood Block',            w:2,  h:8,  active:true  }, // area 16
+        { key:'1x16',  label:'Wood Block (1×16)',              type:'Wood Block',            w:1,  h:16, active:false, sideways:true }, // area 16
+        { key:'2x4',   label:'Wood Block (2×4)',               type:'Wood Block',            w:2,  h:4,  active:true  }, // area 8
+        { key:'1x8',   label:'Wood Block (1×8)',               type:'Wood Block',            w:1,  h:8,  active:true  }, // area 8
+        { key:'3x2',   label:'Vending Machine (3×2)',          type:'Vending Machine',       w:3,  h:2,  active:false, unique:true }, // area 6
+        { key:'2x2',   label:'Wood Block (2×2)',               type:'Wood Block',            w:2,  h:2,  active:true  }, // area 4
+        { key:'1x4',   label:'Wood Block (1×4)',               type:'Wood Block',            w:1,  h:4,  active:true  }, // area 4
+        { key:'1x3',   label:'Sideways Vending Machine (1×3)', type:'Sideways Vending Machine', w:1, h:3, active:false, sideways:true, unique:true }, // area 3
+        { key:'1x2',   label:'Wood Block (1×2)',               type:'Wood Block',            w:1,  h:2,  active:true  }, // area 2
+        { key:'1x1',   label:'Wood Block (1×1)',               type:'Wood Block',            w:1,  h:1,  active:true  }, // area 1
     ];
 
     // Build flat trial list: each def produces both orientations (if non-square), sorted area DESC
@@ -2537,6 +2562,7 @@
         return (l1-l2)**2 + (a1-a2)**2 + (b1-b2)**2;
     }
 
+
     // Precompute LAB values for every palette color (done once at startup and when palette changes)
     let paletteLAB = null;
     function buildPaletteLAB() {
@@ -2736,27 +2762,22 @@
 
         // ── Dithering ──────────────────────────────────────────────────────
         const ditherMode = document.getElementById('gsDither') ? document.getElementById('gsDither').value : 'none';
-        if (ditherMode === 'bayer') {
-            const bayer4 = [
-                [ 0, 8, 2,10], [12, 4,14, 6],
-                [ 3,11, 1, 9], [15, 7,13, 5]
-            ];
-            for (let py = 0; py < fh; py++) {
-                for (let px = 0; px < fw; px++) {
-                    const i = (py * fw + px) * 4;
-                    if (data[i+3] < 32) continue;
-                    const threshold = (bayer4[py%4][px%4] / 16 - 0.5) * 40;
-                    data[i]   = Math.max(0, Math.min(255, data[i]   + threshold));
-                    data[i+1] = Math.max(0, Math.min(255, data[i+1] + threshold));
-                    data[i+2] = Math.max(0, Math.min(255, data[i+2] + threshold));
-                }
-            }
-        }
-        // Floyd-Steinberg is applied after each pixel is matched (error diffusion)
         const doFloyd = ditherMode === 'floyd';
+        const doBayer = ditherMode === 'bayer';
+        // Bayer matrix for adaptive per-pixel ordered dithering
+        const bayer4 = [
+            [ 0, 8, 2,10], [12, 4,14, 6],
+            [ 3,11, 1, 9], [15, 7,13, 5]
+        ];
+        const BAYER_STRENGTH = 48;
         
 
         const activePalette = palette.filter(p => p.active);
+        const grayBiasOn = document.getElementById('grayBiasToggle')?.checked || false;
+
+        // ── Color Simplify: box blur passes when toggle is on ────────────────────
+        const smoothingLevel = 0; // no blur — gray bias logic below handles color correction
+
         const grays = palette.filter(p => p.isGray && p.active);
         currentCounts = new Array(palette.length).fill(0);
         const colors = [];
@@ -2816,31 +2837,54 @@
                 ? shiftHue(data[i], data[i+1], data[i+2], hueOffset)
                 : [data[i], data[i+1], data[i+2]];
 
-            // Cache LAB for this source pixel (avoid recomputing for gray fallback)
+            // Cache LAB for this source pixel
             let srcLabCache = null;
             const labDist = colorMatchMode === 'lab'
                 ? (pi) => {
-                    if (!srcLabCache) srcLabCache = getSrcLab(pr,pg,pb);
+                    const [L1,A1,B1] = getSrcLabCached();
                     const [L2,A2,B2] = paletteLabMap[pi];
-                    return distLab(srcLabCache[0],srcLabCache[1],srcLabCache[2],L2,A2,B2);
+                    return distLab(L1,A1,B1,L2,A2,B2);
                 }
                 : colorMatchMode === 'weighted'
                     ? (pi) => distWeighted(pr,pg,pb,palette[pi].r,palette[pi].g,palette[pi].b)
                     : (pi) => { const p=palette[pi],dr=pr-p.r,dg=pg-p.g,db=pb-p.b; return dr*dr+dg*dg+db*db; };
 
+            // Find best palette match
             let minD = Infinity, chosen = activePalette[0] || palette[35];
-            activeIdxs.forEach(pi => {
-                const d = labDist(pi);
-                if (d < minD) { minD = d; chosen = palette[pi]; }
-            });
-
-            // Gray fallback threshold (scale for squared vs sqrt distance)
-            const grayThreshold = colorMatchMode === 'rgb' ? 10000 : colorMatchMode === 'weighted' ? 3000 : 300;
-            if (minD > grayThreshold && grayIdxs.length > 0) {
-                let minGrayD = Infinity;
-                grayIdxs.forEach(pi => {
+            if (grayBiasOn && grayIdxs.length > 0) {
+                // Check if this pixel is near-gray (saturation < 0.12)
+                const maxC = Math.max(pr,pg,pb), minC = Math.min(pr,pg,pb);
+                const pixelSat = maxC > 0 ? (maxC - minC) / maxC : 0;
+                if (pixelSat < 0.12) {
+                    // Search grays first
+                    grayIdxs.forEach(pi => {
+                        const d = labDist(pi);
+                        if (d < minD) { minD = d; chosen = palette[pi]; }
+                    });
+                    // Only override with a colored paint if it's dramatically closer (< 25% of gray dist)
+                    let minColorD = Infinity;
+                    activeIdxs.forEach(pi => {
+                        if (grayIdxs.includes(pi)) return;
+                        const d = labDist(pi);
+                        if (d < minColorD) minColorD = d;
+                    });
+                    if (minColorD < minD * 0.25) {
+                        minD = Infinity;
+                        activeIdxs.forEach(pi => {
+                            const d = labDist(pi);
+                            if (d < minD) { minD = d; chosen = palette[pi]; }
+                        });
+                    }
+                } else {
+                    activeIdxs.forEach(pi => {
+                        const d = labDist(pi);
+                        if (d < minD) { minD = d; chosen = palette[pi]; }
+                    });
+                }
+            } else {
+                activeIdxs.forEach(pi => {
                     const d = labDist(pi);
-                    if (d < minGrayD) { minGrayD = d; chosen = palette[pi]; }
+                    if (d < minD) { minD = d; chosen = palette[pi]; }
                 });
             }
 
@@ -2848,28 +2892,49 @@
             const idx = palette.findIndex(p => p.hex === chosen.hex);
             currentCounts[idx]++;
 
-            // Floyd-Steinberg: spread quantization error to neighbors
-            if (doFloyd && chosen) {
+            // Dithering — always full error, no adaptive threshold
+            if (chosen) {
                 const pi2 = Math.floor(i / 4);
                 const px2 = pi2 % fw, py2 = Math.floor(pi2 / fw);
                 const er = pr - chosen.r, eg = pg - chosen.g, eb = pb - chosen.b;
-                const spread = [[1,0,7/16],[-1,1,3/16],[0,1,5/16],[1,1,1/16]];
-                spread.forEach(([dx, dy, wt]) => {
-                    const nx = px2+dx, ny = py2+dy;
-                    if (nx>=0&&nx<fw&&ny>=0&&ny<fh) {
-                        const ni=(ny*fw+nx)*4;
-                        data[ni]  =Math.max(0,Math.min(255,data[ni]  +er*wt));
-                        data[ni+1]=Math.max(0,Math.min(255,data[ni+1]+eg*wt));
-                        data[ni+2]=Math.max(0,Math.min(255,data[ni+2]+eb*wt));
-                    }
-                });
+
+                if (doFloyd) {
+                    // Classic Floyd-Steinberg: full error diffusion every pixel
+                    const spread = [[1,0,7/16],[-1,1,3/16],[0,1,5/16],[1,1,1/16]];
+                    spread.forEach(([dx, dy, wt]) => {
+                        const nx = px2+dx, ny = py2+dy;
+                        if (nx>=0&&nx<fw&&ny>=0&&ny<fh) {
+                            const ni=(ny*fw+nx)*4;
+                            data[ni]  =Math.max(0,Math.min(255,data[ni]  +er*wt));
+                            data[ni+1]=Math.max(0,Math.min(255,data[ni+1]+eg*wt));
+                            data[ni+2]=Math.max(0,Math.min(255,data[ni+2]+eb*wt));
+                        }
+                    });
+                }
+
+                if (doBayer) {
+                    // Ordered Bayer: perturb source pixels ahead in scan order
+                    // so that the next pixel's match accounts for accumulated error
+                    const bv = (bayer4[py2%4][px2%4] / 16 - 0.5) * BAYER_STRENGTH;
+                    [[1,0,0.5],[-1,1,0.1875],[0,1,0.3125],[1,1,0.0625]].forEach(([dx,dy,wt]) => {
+                        const nx=px2+dx, ny=py2+dy;
+                        if (nx>=0&&nx<fw&&ny>=0&&ny<fh) {
+                            const ni=(ny*fw+nx)*4;
+                            data[ni]  =Math.max(0,Math.min(255,data[ni]  +bv*wt));
+                            data[ni+1]=Math.max(0,Math.min(255,data[ni+1]+bv*wt));
+                            data[ni+2]=Math.max(0,Math.min(255,data[ni+2]+bv*wt));
+                        }
+                    });
+                }
             }
         }
 
         mappedPixels = { colors, w: fw, h: fh };
+        blockGridFor = null;
         renderCanvas();
         resText.value = w;
         renderStats();
+        updateCounters();
         if (typeof fitToView === 'function') fitToView(); else applyTransform();
         updateImageThemeDot();
         if (currentTheme === 'image') applyImageTheme();
@@ -3240,7 +3305,7 @@
     }
 
     // Keys managed by the Unique Blocks UI (not shown in Blocks tab)
-    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '3x6']);
+    const UNIQUE_KEYS = new Set(['16x16', '3x2', '1x3', '3x6', '6x16', '6x8']);
 
     function invalidateAndRefresh() {
         blockGridFor = null; renderCanvas(); updateCounters();
@@ -3326,6 +3391,14 @@
         syncUniqueBlockDef('16x16', document.getElementById('uniq_16x16').checked);
         invalidateAndRefresh();
     });
+    document.getElementById('uniq_6x16').addEventListener('change', () => {
+        syncUniqueBlockDef('6x16', document.getElementById('uniq_6x16').checked);
+        invalidateAndRefresh();
+    });
+    document.getElementById('uniq_6x8').addEventListener('change', () => {
+        syncUniqueBlockDef('6x8', document.getElementById('uniq_6x8').checked);
+        invalidateAndRefresh();
+    });
     document.getElementById('uniq_3x6').addEventListener('change', () => {
         syncUniqueBlockDef('3x6', document.getElementById('uniq_3x6').checked);
         invalidateAndRefresh();
@@ -3374,14 +3447,20 @@
 
     // Max Optimization button — enables every block
         document.getElementById('gsMaxOptBtn').onclick = () => {
+        const excludeUnobtainable = document.getElementById('maxOptExcludeUnobtainable')?.checked !== false;
+        const UNOBTAINABLE_KEYS = new Set(['6x16']); // Grass Block — CW: FREEBLOCKS only
+
         // Enable all regular blocks
         YEEPS_BLOCK_DEFS.forEach(def => {
+            if (excludeUnobtainable && UNOBTAINABLE_KEYS.has(def.key)) return;
             def.active = true;
             const cb = document.getElementById('blockCb_' + def.key);
             if (cb) { cb.checked = true; const row = document.getElementById('blockRow_' + def.key); if(row) row.classList.remove('off'); }
         });
-        // Enable all unique blocks
-        ['16x16','3x2','1x3','3x6'].forEach(k => {
+        // Enable unique blocks (6x8 Wooden Passageway always ok, 6x16 Grass Block respects toggle)
+        const uniqueToEnable = ['16x16','3x2','1x3','3x6','6x8'];
+        if (!excludeUnobtainable) uniqueToEnable.push('6x16');
+        uniqueToEnable.forEach(k => {
             syncUniqueBlockDef(k, true);
             const el = document.getElementById('uniq_' + k) || document.getElementById('moreOptCb_' + k);
             if (el) el.checked = true;
@@ -3391,7 +3470,7 @@
         if (cb1x16) cb1x16.checked = true;
         updateMoreOptDeps();
         invalidateAndRefresh();
-        showToast('⚡ All blocks enabled!');
+        showToast(excludeUnobtainable ? '⚡ All obtainable blocks enabled!' : '⚡ All blocks enabled (including unobtainable)!');
     };
 
     // Tab switching
@@ -3415,10 +3494,7 @@
             closeModal(document.getElementById('gridSettingsModal'));
     });
     function updateGearIndicator() {
-        const btn = document.getElementById('gridGearBtn');
-        btn.textContent = '⚙️';
-        btn.style.color = '';
-        btn.title = 'Grid Settings';
+        // No indicator needed — settings is standalone
     }
     document.getElementById('gsBlockOpt').addEventListener('change', () => {
         blockGridFor = null;
@@ -3441,6 +3517,7 @@
     updateGearIndicator();
     document.getElementById('gsDither').addEventListener('change', () => updateDisplay());
     document.getElementById('gsColorMatch').addEventListener('change', () => updateDisplay());
+    document.getElementById('grayBiasToggle').addEventListener('change', () => updateDisplay());
 
     // Grid toggle
     const hueSlider = document.getElementById('hueSlider');
@@ -5363,8 +5440,13 @@
 
         // Collect forced / excluded blocks
         const allBlocks = foGetAllOptimizableBlocks();
+        const excludeUnobt = document.getElementById('foExcludeUnobtainable')?.checked !== false;
+        const UNOBT_KEYS = new Set(['6x16']);
         const forced  = new Set(allBlocks.filter(d => document.getElementById('foForce_'+d.key)?.checked).map(d => d.key));
-        const excluded = new Set(allBlocks.filter(d => document.getElementById('foExclude_'+d.key)?.checked).map(d => d.key));
+        const excluded = new Set(allBlocks.filter(d => {
+            if (excludeUnobt && UNOBT_KEYS.has(d.key)) return true; // auto-exclude unobtainable
+            return document.getElementById('foExclude_'+d.key)?.checked;
+        }).map(d => d.key));
         // Searchable = not forced, not excluded
         const searchable = allBlocks.filter(d => !forced.has(d.key) && !excluded.has(d.key)).map(d => d.key);
 
