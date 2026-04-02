@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://yeepscolors.jackston.net/sitemap.xml
