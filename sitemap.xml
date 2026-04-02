@@ -6,12 +6,3 @@
     <priority>1.0</priority>
   </url>
 </urlset>
-```
-Then submit that sitemap URL in both Search Console and Bing Webmaster Tools.
-
-**Step 4 — Add a robots.txt**
-Create `robots.txt` in your repo root:
-```
-User-agent: *
-Allow: /
-Sitemap: https://yeepscolors.jackston.net/sitemap.xml
