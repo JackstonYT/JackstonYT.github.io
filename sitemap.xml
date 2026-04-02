@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/0.5/sitemap">
+  <url>
+    <loc>https://yeepscolors.jackston.net/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+```
+Then submit that sitemap URL in both Search Console and Bing Webmaster Tools.
+
+**Step 4 — Add a robots.txt**
+Create `robots.txt` in your repo root:
+```
+User-agent: *
+Allow: /
+Sitemap: https://yeepscolors.jackston.net/sitemap.xml
